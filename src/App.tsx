@@ -28,44 +28,17 @@ import { useSpreadsheetData } from './hooks/useSpreadsheetData';
 import { coerceDateInMonth } from './utils/dateCoercion';
 import { DEFAULT_MONTH, MAX_HISTORY_SIZE } from './constants';
 
-const TEMPLATE_COLUMNS: Column[] = [
-  { id: 'data', name: 'Data', type: 'date' },
-  { id: 'descricao', name: 'Descrição', type: 'text' },
-  { id: 'tipo', name: 'Tipo', type: 'select', options: ['Entrada', 'Saída'] },
-  { id: 'valor', name: 'Valor', type: 'number' },
-  { id: 'categoria', name: 'Categoria', type: 'text' },
-];
-
-const TEMPLATE_ROWS: Row[] = [
-  { id: 'row-1', month: DEFAULT_MONTH, data: { data: '2026-06-01', descricao: 'Salário Mensal', tipo: 'Entrada', valor: 5500.00, categoria: 'Trabalho' } },
-  { id: 'row-2', month: DEFAULT_MONTH, data: { data: '2026-06-03', descricao: 'Aluguel do Apartamento', tipo: 'Saída', valor: 1350.00, categoria: 'Moradia' } },
-  { id: 'row-3', month: DEFAULT_MONTH, data: { data: '2026-06-05', descricao: 'Venda de Notebook Antigo', tipo: 'Entrada', valor: 1600.00, categoria: 'Vendas' } },
-  { id: 'row-4', month: DEFAULT_MONTH, data: { data: '2026-06-06', descricao: 'Supermercado Mensal', tipo: 'Saída', valor: 820.50, categoria: 'Alimentação' } },
-  { id: 'row-5', month: DEFAULT_MONTH, data: { data: '2026-06-08', descricao: 'Mensalidade da Academia', tipo: 'Saída', valor: 120.00, categoria: 'Saúde & Lazer' } },
-  { id: 'row-6', month: DEFAULT_MONTH, data: { data: '2026-06-10', descricao: 'Dividendo Ações', tipo: 'Entrada', valor: 75.30, categoria: 'Investimentos' } },
-];
-
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth();
   const [selectedMonth, setSelectedMonth] = useState<string>(DEFAULT_MONTH);
   const [history, setHistory] = useState<HistoryState[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
   const [darkMode, setDarkMode] = useState<boolean>(() => getTheme() === 'dark');
-  const [didSeedDefaults, setDidSeedDefaults] = useState(false);
 
   const { columns, rows, dataLoaded, syncStatus, setColumns, setRows } = useSpreadsheetData(
     user?.id,
     selectedMonth
   );
-
-  // Seed default template on first load if user has no columns
-  useEffect(() => {
-    if (dataLoaded && user && columns.length === 0 && !didSeedDefaults) {
-      setColumns(TEMPLATE_COLUMNS);
-      setRows(TEMPLATE_ROWS);
-      setDidSeedDefaults(true);
-    }
-  }, [dataLoaded, user, columns.length, didSeedDefaults, setColumns, setRows]);
 
   // Reset history when data changes month
   useEffect(() => {

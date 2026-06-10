@@ -1,62 +1,125 @@
 # FinanSpreadOS
 
-Planilha inteligente de controle financeiro pessoal estilo Excel, com autenticação via Supabase e persistência multi-tabela por mês.
+> Planilha inteligente de controle financeiro pessoal estilo Excel — 100% Supabase.
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61dafb)](https://react.dev/)
+[![Tests](https://img.shields.io/badge/tests-41%20passing-brightgreen)](#testes)
+
+## Features
+
+- 📊 Planilha com colunas customizáveis (texto, número, select, data)
+- 💰 Cálculo automático de Entradas / Saídas / Saldo
+- 🔐 Auth via Magic Link (Supabase Auth)
+- ☁️ Dados isolados por usuário via RLS
+- 🔄 Auto-refresh a cada 30s + no foco da janela
+- 🌓 Dark mode
+- 📥 Import/Export CSV
+- ↩️ Undo/Redo (até 50 estados)
 
 ## Stack
 
-- **Frontend:** React 19 + Vite 6 + TypeScript estrito + Tailwind CSS 4
-- **Backend:** Supabase (Auth + Postgres + Realtime)
-- **Testes:** Vitest (unit/integration) + Playwright (E2E)
-- **Lint/format:** ESLint + `tsc --noEmit`
+- React 19 + Vite 6 + TypeScript strict
+- Supabase (Auth + Postgres)
+- Tailwind CSS 4
+- Motion (animações)
+- Vitest (unit tests)
 
-## Setup
+## Quick Start
 
 ```bash
-# 1. Instalar dependências
+# 1. Instalar deps
 npm install
 
-# 2. Variáveis de ambiente
+# 2. Configurar Supabase
 cp .env.example .env
-# Edite o .env e preencha VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY
-#  (Settings > API no painel do seu projeto Supabase)
+# Preencha VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY
 
-# 3. Subir o dev server
-npm run dev      # http://localhost:3000
+# 3. Aplicar migrations
+npx supabase db push
 
-# 4. Rodar testes
-npm test         # vitest (unit/integration)
-npm run test:e2e # playwright (E2E, requer dev server)
-
-# 5. Lint
-npm run lint     # tsc --noEmit + eslint
+# 4. Rodar
+npm run dev
+# http://localhost:3000
 ```
 
-## Segurança
+## Scripts
 
-- **Nunca** commite o arquivo `.env` (já está no `.gitignore`).
-- Antes do primeiro `git push`, **audite as policies RLS** do Supabase (veja `supabase/migrations/`).
-- O hook `pre-commit` bloqueia commits que contenham `.env` ou chaves Supabase.
+| Script | Descrição |
+|---|---|
+| `npm run dev` | Vite dev server (porta 3000) |
+| `npm run build` | Build de produção em `dist/` |
+| `npm run preview` | Serve `dist/` para preview |
+| `npm run lint` | TypeScript check + ESLint |
+| `npm test` | Roda testes unitários (Vitest) |
+| `npm run test:watch` | Vitest em watch mode |
 
 ## Estrutura
 
 ```
 src/
-├── App.tsx                 # Orquestração: views, history, theme
-├── components/             # UI: Spreadsheet, modais, KPI, Toast, ErrorBoundary
-├── contexts/               # AuthContext (sessão Supabase)
-├── hooks/                  # useSpreadsheetData, useRealtime, useDateCoercion, ...
-├── lib/                    # dataAccess (CRUD), supabase client, tableNames
-├── pages/                  # Auth (OTP magic link)
-├── utils/                  # financeHelper, csv, storage, debounce, monthUtils
-├── types.ts                # Tipos compartilhados
-├── constants.ts            # Chaves de storage, defaults
-└── main.tsx                # Bootstrap (StrictMode + ErrorBoundary + AuthProvider)
+├── App.tsx                    # Componente principal
+├── main.tsx                   # Entry point
+├── contexts/AuthContext.tsx   # Auth + session
+├── hooks/useSpreadsheetData.ts # CRUD de colunas/linhas
+├── lib/
+│   ├── supabase.ts            # Cliente + mock fallback
+│   └── dataAccess.ts          # load/save columns + rows
+├── components/
+│   ├── Spreadsheet.tsx        # Tabela editável
+│   ├── KPICard.tsx            # Cards de resumo
+│   ├── Toast.tsx              # Notificações
+│   ├── ErrorBoundary.tsx      # Error handling
+│   ├── CellRenderer.tsx       # Formatação de células
+│   ├── AddColumnModal.tsx
+│   ├── DeleteColumnModal.tsx
+│   └── ColumnSettingsMenu.tsx
+├── utils/
+│   ├── financeHelper.ts       # Cálculo de resumo
+│   ├── csv.ts                 # Import/export
+│   ├── monthUtils.ts          # Navegação de mês
+│   ├── dateCoercion.ts        # Coerção para mês selecionado
+│   ├── cellFormat.ts          # Formatação de células
+│   ├── format.ts              # Moeda (BRL)
+│   ├── debounce.ts            # Debounce genérico
+│   └── storage.ts             # localStorage (só tema)
+└── types.ts
+
+supabase/migrations/           # Schema + RLS
+.github/workflows/ci.yml       # CI (lint + test)
 ```
 
-## Decisões Arquiteturais
+## Deploy (Cloudflare Pages)
 
-Veja `CONTEXT.md` para detalhes completos. Resumo:
+1. Conecte o repositório em [Cloudflare Pages](https://dash.cloudflare.com/?to=/:account/pages)
+2. **Build command**: `npm run build`
+3. **Build output**: `dist`
+4. **Environment variables**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+5. Ative **SPA Mode** em Settings → General
 
-1. **Multi-tabela por mês**: cada mês tem sua própria tabela `rows_YYYY_MM` no Postgres, evitando degradação com volume.
-2. **Coerção temporal estrita**: se o mês ativo é `2026-06`, datas fora desse mês são re-coagidas para `2026-06-XX`.
-3. **Sem modais bloqueantes**: `window.alert/confirm` foram substituídos por Toasts animados e confirmação in-line.
+O projeto já inclui:
+- `public/_headers` — CSP, HSTS, security headers
+- `public/_routes.json` — SPA fallback
+
+## Segurança
+
+- **CSP** restritivo em `public/_headers`
+- **HSTS** com 2 anos + includeSubDomains + preload
+- **RLS** em todas as tabelas Supabase (isolamento por `user_id`)
+- **SECURITY INVOKER** nas funções RPC
+- **Frame-ancestors 'none'** (anti-clickjacking)
+- **`.env` protegido** por `.gitignore`
+- **Sem localStorage para dados** (apenas tema)
+
+## Testes
+
+- **41 testes** em 7 suites (Vitest)
+- Cobertura: hooks, utils, lib
+
+```bash
+npm test
+```
+
+## CI
+
+GitHub Actions roda `npm test` + `npm run lint` em todo PR (ver `.github/workflows/ci.yml`).

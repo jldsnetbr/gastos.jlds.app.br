@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { LucideIcon } from 'lucide-react';
-import { formatCurrency } from '../hooks/useCellFormatter';
+import { formatCurrency } from '../utils/format';
 
 interface KPICardProps {
   id: string;

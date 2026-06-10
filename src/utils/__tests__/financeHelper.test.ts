@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { calculateSummary } from '../financeHelper';
 import { Column, Row } from '../../types';
-import { formatCurrency } from '../../hooks/useCellFormatter';
+import { formatCurrency } from '../format';
 
 describe('calculateSummary', () => {
   const columns: Column[] = [

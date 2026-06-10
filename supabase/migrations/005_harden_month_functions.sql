@@ -71,12 +71,17 @@ language plpgsql
 security invoker
 set search_path = public
 as $$
+declare
+  uid uuid := auth.uid();
 begin
+  if uid is null then
+    raise exception 'Not authenticated';
+  end if;
   if month_key is null or month_key !~ '^\d{4}-(0[1-9]|1[0-2])$' then
     raise exception 'Invalid month_key format: %', month_key;
   end if;
   insert into public.month_registry (user_id, month)
-  values (auth.uid(), month_key)
+  values (uid, month_key)
   on conflict (user_id, month) do nothing;
 end;
 $$;

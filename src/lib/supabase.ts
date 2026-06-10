@@ -26,7 +26,7 @@ export const supabase =
             select: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
             order: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
             in: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
-            then: (cb: any) => Promise.resolve({ data: null, error: new Error('Supabase not configured') }).then(cb),
+            then: (cb: (value: unknown) => unknown) => Promise.resolve({ data: null, error: new Error('Supabase not configured') }).then(cb),
           }),
           in: () => ({ eq: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }) }),
           order: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
@@ -43,4 +43,4 @@ export const supabase =
           signInWithOtp: () => Promise.resolve({ data: {}, error: null }),
           signOut: () => Promise.resolve({ error: null }),
         },
-      } as any);
+      } as unknown as ReturnType<typeof createClient>);

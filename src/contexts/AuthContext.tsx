@@ -1,7 +1,6 @@
-import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
-import { RESEND_COOLDOWN_SECONDS } from '../constants';
 
 interface AuthContextType {
   user: User | null;
@@ -15,11 +14,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const lastOtpSentAt = useRef<number>(0);
 
   useEffect(() => {
-    supabase.auth.getSession().then((response: { data: { session: Session | null } }) => {
-      setUser(response.data.session?.user ?? null);
+    supabase.auth.getSession().then((res) => {
+      setUser(res.data.session?.user ?? null);
     }).catch(() => {
       setUser(null);
     }).finally(() => {
@@ -35,12 +33,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signInWithOtp = async (email: string) => {
-    const elapsed = Date.now() - lastOtpSentAt.current;
-    if (elapsed < RESEND_COOLDOWN_SECONDS * 1000) {
-      const remaining = Math.ceil((RESEND_COOLDOWN_SECONDS * 1000 - elapsed) / 1000);
-      return { error: `Aguarde ${remaining}s para reenviar o código` };
-    }
-    lastOtpSentAt.current = Date.now();
     const { error } = await supabase.auth.signInWithOtp({ email });
     return { error: error?.message };
   };

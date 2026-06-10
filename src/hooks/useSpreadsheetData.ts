@@ -6,18 +6,10 @@ import {
   loadMonthRows as loadRemoteMonthRows,
   saveMonthRows as saveRemoteMonthRows,
   ensureMonthTable,
-  migrateLocalStorageToSupabase,
 } from '../lib/dataAccess';
-import { useRealtime } from './useRealtime';
 import { debounce } from '../utils/debounce';
-import {
-  loadColumns as loadLocalColumns,
-  saveColumns as saveLocalColumns,
-  loadMonthRows as loadLocalMonthRows,
-  saveMonthRows as saveLocalMonthRows,
-} from '../utils/storage';
 
-export type SyncStatus = 'idle' | 'saving' | 'saved' | 'offline' | 'error';
+export type SyncStatus = 'idle' | 'saving' | 'saved' | 'offline';
 
 interface UseSpreadsheetDataReturn {
   columns: Column[];
@@ -30,6 +22,7 @@ interface UseSpreadsheetDataReturn {
 }
 
 const SAVE_DEBOUNCE_MS = 500;
+const REFRESH_INTERVAL_MS = 30_000;
 
 export function useSpreadsheetData(
   userId: string | undefined,
@@ -39,31 +32,16 @@ export function useSpreadsheetData(
   const [rows, setRows] = useState<Row[]>([]);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
-
-  const lastLocalUpdate = useRef<number>(0);
-  const isLocalChange = useRef<boolean>(false);
+  const monthRef = useRef(month);
 
   const fetchAndSet = useCallback(async (uid: string, m: string) => {
-    const remoteRows = await loadRemoteMonthRows(uid, m);
-    if (remoteRows) {
-      setRows(remoteRows);
-      saveLocalMonthRows(m, remoteRows);
-    } else {
-      setRows([]);
+    try {
+      const remoteRows = await loadRemoteMonthRows(uid, m);
+      setRows(remoteRows ?? []);
+    } catch {
+      // silencioso: estado anterior preservado
     }
   }, []);
-
-  const onRealtimeChange = useCallback(() => {
-    if (!userId) return;
-    if (isLocalChange.current) {
-      isLocalChange.current = false;
-      return;
-    }
-    if (Date.now() - lastLocalUpdate.current < 1000) return;
-    fetchAndSet(userId, month);
-  }, [userId, month, fetchAndSet]);
-
-  useRealtime({ userId, month, onRowsChange: onRealtimeChange });
 
   const debouncedSave = useMemo(
     () => debounce(async (uid: string, m: string, cols: Column[], r: Row[]) => {
@@ -74,14 +52,6 @@ export function useSpreadsheetData(
         setTimeout(() => setSyncStatus('idle'), 2000);
       } catch {
         setSyncStatus('offline');
-        try {
-          const raw = localStorage.getItem('pending_sync');
-          const pending = raw ? JSON.parse(raw) : {};
-          pending[`${uid}:${m}`] = { columns: cols, rows: r, ts: Date.now() };
-          localStorage.setItem('pending_sync', JSON.stringify(pending));
-        } catch {
-          /* storage full or corrupted — discard pending */
-        }
       }
     }, SAVE_DEBOUNCE_MS),
     []
@@ -94,10 +64,6 @@ export function useSpreadsheetData(
   const updateRemote = useCallback(
     (newCols: Column[], newRows: Row[]) => {
       if (!userId) return;
-      isLocalChange.current = true;
-      lastLocalUpdate.current = Date.now();
-      saveLocalColumns(newCols);
-      saveLocalMonthRows(month, newRows);
       setSyncStatus('saving');
       debouncedSave(userId, month, newCols, newRows);
     },
@@ -112,38 +78,40 @@ export function useSpreadsheetData(
 
     const init = async () => {
       try {
-        await migrateLocalStorageToSupabase(userId);
-
         const remoteColumns = await loadRemoteColumns(userId);
-        if (remoteColumns && remoteColumns.length > 0) {
-          setColumns(remoteColumns);
-          saveLocalColumns(remoteColumns);
-        } else {
-          setColumns([]);
-        }
+        setColumns(remoteColumns ?? []);
 
         await ensureMonthTable(month);
         await fetchAndSet(userId, month);
-
-        if (remoteColumns && remoteColumns.length === 0) {
-          // columns will be set by the parent via setColumns after init
-        }
       } catch {
-        const localCols = loadLocalColumns();
-        if (localCols) setColumns(localCols);
-        const localRows = loadLocalMonthRows(month);
-        setRows(localRows ?? []);
+        setColumns([]);
+        setRows([]);
       } finally {
         setDataLoaded(true);
       }
     };
 
     init();
-  }, [userId]);
+  }, [userId, month, fetchAndSet]);
 
+  // Auto-refresh: quando muda mês OU a cada 30s OU janela volta a ter foco
   useEffect(() => {
     if (!dataLoaded || !userId) return;
-    ensureMonthTable(month).then(() => fetchAndSet(userId, month));
+
+    monthRef.current = month;
+    ensureMonthTable(month).then(() => fetchAndSet(userId, month)).catch(() => {});
+
+    const interval = setInterval(() => {
+      fetchAndSet(userId, monthRef.current);
+    }, REFRESH_INTERVAL_MS);
+
+    const onFocus = () => fetchAndSet(userId, monthRef.current);
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', onFocus);
+    };
   }, [month, dataLoaded, userId, fetchAndSet]);
 
   const refresh = useCallback(async () => {

@@ -18,9 +18,7 @@ import AddColumnModal from './AddColumnModal';
 import DeleteColumnModal from './DeleteColumnModal';
 import ColumnSettingsMenu from './ColumnSettingsMenu';
 import CellRenderer from './CellRenderer';
-import { useDateCoercion } from '../hooks/useDateCoercion';
-import { useCellFormatter } from '../hooks/useCellFormatter';
-import { useMutationLock } from '../hooks/useMutationLock';
+import { coerceDateInMonth } from '../utils/dateCoercion';
 import { parseCSV, toCSV, downloadCSV } from '../utils/csv';
 import { showToast as globalShowToast } from '../utils/toast';
 
@@ -54,9 +52,6 @@ export default function Spreadsheet({
   const [toast, setToast] = useState<ToastData | null>(null);
 
   const editInputRef = useRef<HTMLInputElement>(null);
-  const coerceDate = useDateCoercion(selectedMonth);
-  const formatter = useCellFormatter(columns);
-  const { pending: mutationPending, wrap: lockWrap } = useMutationLock();
 
   const showLocalToast = useCallback((message: string, type: ToastData['type'] = 'success') => {
     globalShowToast(setToast, message, type);
@@ -85,7 +80,7 @@ export default function Spreadsheet({
       }
 
       if (col?.type === 'date') {
-        const coerced = coerceDate(editValue);
+        const coerced = coerceDateInMonth(editValue, selectedMonth);
         if (coerced !== editValue.trim()) {
           showLocalToast(`Data ajustada para o mês ativo (${selectedMonth})`, 'info');
         }
@@ -101,7 +96,7 @@ export default function Spreadsheet({
       onDataChange(columns, updatedRows);
       setEditingCell(null);
     },
-    [editingCell, editValue, columns, rows, selectedMonth, coerceDate, onDataChange, showLocalToast]
+    [editingCell, editValue, columns, rows, selectedMonth, onDataChange, showLocalToast]
   );
 
   const handleKeyDown = useCallback(
@@ -136,7 +131,7 @@ export default function Spreadsheet({
   }, []);
 
   const handleAddRow = useCallback(() => {
-    const newRowId = `row_${Date.now()}`;
+    const newRowId = `row_${crypto.randomUUID()}`;
     const defaultData: { [key: string]: string | number } = {};
 
     columns.forEach((col) => {
@@ -181,7 +176,7 @@ export default function Spreadsheet({
         return;
       }
 
-      const newColId = `col_${Date.now()}`;
+      const newColId = `col_${crypto.randomUUID()}`;
       const newColumn: Column = { id: newColId, name, type, options };
 
       const updatedRows = rows.map((r) => ({
@@ -330,11 +325,6 @@ export default function Spreadsheet({
     );
   }, [filteredRowsByMonth, columns, searchQuery]);
 
-  const safeAddRow = useMemo(() => lockWrap(handleAddRow), [lockWrap, handleAddRow]);
-  const safeDeleteRow = useMemo(() => lockWrap(handleDeleteRow), [lockWrap, handleDeleteRow]);
-  const safeAddColumn = useMemo(() => lockWrap(handleAddColumn), [lockWrap, handleAddColumn]);
-  const safeDeleteColumn = useMemo(() => lockWrap(handleDeleteColumn), [lockWrap, handleDeleteColumn]);
-
   const activeCol = activeHeaderSettings ? columns.find((c) => c.id === activeHeaderSettings) ?? null : null;
   const activeColIndex = activeHeaderSettings ? columns.findIndex((c) => c.id === activeHeaderSettings) : -1;
 
@@ -418,7 +408,7 @@ export default function Spreadsheet({
           <button
             id="btn-add-column-trigger"
             onClick={() => setShowAddColumnModal(true)}
-            disabled={mutationPending}
+            disabled={false}
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-blue-600 dark:text-indigo-400 bg-blue-50 hover:bg-blue-100 dark:bg-[#1E222A] dark:hover:bg-[#252A34] border border-blue-100 dark:border-slate-800 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <PlusCircle className="w-4 h-4" />
@@ -427,7 +417,7 @@ export default function Spreadsheet({
           <button
             id="btn-delete-column-trigger"
             onClick={() => setShowDeleteColumnModal(true)}
-            disabled={mutationPending}
+            disabled={false}
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-rose-600 dark:text-rose-450 bg-rose-50/50 hover:bg-rose-100/50 dark:bg-[#1E222A] dark:hover:bg-rose-950/20 border border-rose-100 dark:border-rose-950/30 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Trash2 className="w-4 h-4" />
@@ -435,8 +425,8 @@ export default function Spreadsheet({
           </button>
           <button
             id="btn-add-row-quick"
-            onClick={safeAddRow}
-            disabled={mutationPending}
+            onClick={handleAddRow}
+            disabled={false}
             className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-500 rounded-lg transition shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Plus className="w-4.5 h-4.5" />
@@ -562,7 +552,7 @@ export default function Spreadsheet({
                           )
                         ) : (
                           <div id={`cell-text-render-${row.id}-${col.id}`} className="min-h-[20px] flex items-center justify-start overflow-hidden text-ellipsis">
-                            <span className="w-full text-ellipsis overflow-hidden"><CellRenderer column={col} value={value} row={row} formatter={formatter} /></span>
+                            <span className="w-full text-ellipsis overflow-hidden"><CellRenderer column={col} value={value} row={row} columns={columns} /></span>
                           </div>
                         )}
                       </td>
@@ -571,8 +561,8 @@ export default function Spreadsheet({
                   <td id={`cell-action-${row.id}`} className="px-2 py-2 text-center align-middle border-b border-transparent">
                     <button
                       id={`row-delete-btn-${row.id}`}
-                      onClick={() => safeDeleteRow(row.id)}
-                      disabled={mutationPending}
+                      onClick={() => handleDeleteRow(row.id)}
+                      disabled={false}
                       title="Excluir Lançamento"
                       aria-label="Excluir Lançamento"
                       className="p-1 rounded-md text-slate-400 dark:text-slate-600 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed"
@@ -602,14 +592,14 @@ export default function Spreadsheet({
       <AddColumnModal
         isOpen={showAddColumnModal}
         onClose={() => setShowAddColumnModal(false)}
-        onAdd={safeAddColumn}
+        onAdd={handleAddColumn}
         existingNames={columns.map((c) => c.name.toLowerCase())}
       />
       <DeleteColumnModal
         isOpen={showDeleteColumnModal}
         onClose={() => setShowDeleteColumnModal(false)}
         columns={columns}
-        onDelete={safeDeleteColumn}
+        onDelete={handleDeleteColumn}
       />
       {activeCol && (
         <ColumnSettingsMenu
