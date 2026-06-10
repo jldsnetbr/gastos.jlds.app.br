@@ -1,0 +1,7 @@
+{
+  "name": "FinanSpreadOS",
+  "description": "Planilha inteligente de controle financeiro pessoal estilo Excel, com autenticação via Supabase e persistência multi-tabela por mês.",
+  "version": "0.1.0",
+  "framework": "react",
+  "language": "typescript"
+}
