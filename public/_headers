@@ -12,5 +12,5 @@
   Content-Type: text/css; charset=utf-8
   Cache-Control: public, max-age=31536000, immutable
 
-*.html
+/*.html
   Cache-Control: public, max-age=0, must-revalidate
