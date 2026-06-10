@@ -138,6 +138,17 @@ export default function App() {
     }
   }, [currentIndex, history, setColumns, setRows]);
 
+  const dateColId = useMemo(() => columns.find((c) => c.type === 'date')?.id, [columns]);
+  const { entradas, saidas, saldo } = useMemo(() => {
+    const filteredMonthRows = rows.filter((row) => {
+      if (dateColId && row.data[dateColId]) {
+        return String(row.data[dateColId]).startsWith(selectedMonth);
+      }
+      return row.month === selectedMonth;
+    });
+    return calculateSummary(columns, filteredMonthRows);
+  }, [columns, rows, selectedMonth, dateColId]);
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-[#0F1115] flex items-center justify-center">
@@ -149,17 +160,6 @@ export default function App() {
   if (!user) {
     return <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><Loader className="w-6 h-6 animate-spin text-slate-400" /></div>}><Auth /></Suspense>;
   }
-
-  const dateColId = useMemo(() => columns.find((c) => c.type === 'date')?.id, [columns]);
-  const { entradas, saidas, saldo } = useMemo(() => {
-    const filteredMonthRows = rows.filter((row) => {
-      if (dateColId && row.data[dateColId]) {
-        return String(row.data[dateColId]).startsWith(selectedMonth);
-      }
-      return row.month === selectedMonth;
-    });
-    return calculateSummary(columns, filteredMonthRows);
-  }, [columns, rows, selectedMonth, dateColId]);
 
   const syncIcon = {
     idle: null,
