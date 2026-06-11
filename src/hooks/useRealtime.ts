@@ -1,12 +1,14 @@
 import { supabase } from '../lib/supabase';
 import { getMonthTableName } from '../lib/tableNames';
 import { Column, ColumnType, Row } from '../types';
+import type React from 'react';
 
 export type RealtimeEventType = 'INSERT' | 'UPDATE' | 'DELETE';
 
 export interface RealtimeCallbacks {
   onRowEvent: (type: RealtimeEventType, row: Row) => void;
   onColumnsChange: (columns: Column[]) => void;
+  skipNextColumnsRef?: React.MutableRefObject<boolean>;
 }
 
 export function subscribeToMonth(
@@ -54,6 +56,10 @@ export function subscribeToMonth(
     'postgres_changes',
     { event: '*', schema: 'public', table: 'user_columns', filter: `user_id=eq.${userId}` },
     async () => {
+      if (callbacks.skipNextColumnsRef?.current) {
+        callbacks.skipNextColumnsRef.current = false;
+        return;
+      }
       const { data } = await supabase
         .from('user_columns')
         .select('column_id, name, type, options, sort_order')

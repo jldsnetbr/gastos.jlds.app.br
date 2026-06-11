@@ -9,7 +9,8 @@ export async function loadColumns(userId: string): Promise<Column[] | null> {
     .eq('user_id', userId)
     .order('sort_order');
 
-  if (error || !data || data.length === 0) return null;
+  if (error) return null;
+  if (!data) return [];
   return data.map((r) => ({
     id: r.column_id,
     name: r.name,

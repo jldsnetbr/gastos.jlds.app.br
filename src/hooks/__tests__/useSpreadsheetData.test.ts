@@ -46,17 +46,29 @@ describe('useSpreadsheetData', () => {
     expect(result.current.syncStatus).toBe('idle');
   });
 
-  it('loads columns and rows from remote, merging missing defaults', async () => {
+  it('loads existing columns from remote without re-adding defaults', async () => {
     const { result } = renderHook(() => useSpreadsheetData('user1', '2026-06'));
 
     await waitFor(() => {
       expect(result.current.dataLoaded).toBe(true);
     });
 
-    // mockColumn has id 'c1' which is not a default, so it gets merged with the 5 defaults
-    expect(result.current.columns.length).toBe(6);
+    expect(result.current.columns.length).toBe(1);
     expect(result.current.columns[0]).toEqual(mockColumn);
     expect(result.current.rows).toEqual([mockRow]);
+  });
+
+  it('adds default columns for new users when remote returns null', async () => {
+    vi.mocked(dataAccess.loadColumns).mockResolvedValue(null);
+
+    const { result } = renderHook(() => useSpreadsheetData('user1', '2026-06'));
+
+    await waitFor(() => {
+      expect(result.current.dataLoaded).toBe(true);
+    });
+
+    expect(result.current.columns.length).toBe(5);
+    expect(result.current.columns.map((c) => c.id)).toEqual(['date', 'desc', 'type', 'amount', 'status']);
   });
 
   it('sets empty arrays when remote calls fail', async () => {

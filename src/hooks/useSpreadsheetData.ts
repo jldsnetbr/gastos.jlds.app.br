@@ -10,6 +10,14 @@ import {
 import { debounce } from '../utils/debounce';
 import { subscribeToMonth, RealtimeEventType } from './useRealtime';
 
+const DEFAULT_COLUMNS: Column[] = [
+  { id: 'date', name: 'Data', type: 'date' },
+  { id: 'desc', name: 'Descrição', type: 'text' },
+  { id: 'type', name: 'Tipo', type: 'select', options: ['Entrada', 'Saída'] },
+  { id: 'amount', name: 'Valor', type: 'number' },
+  { id: 'status', name: 'Status', type: 'select', options: ['Pendente', 'Pago'] },
+];
+
 export type SyncStatus = 'idle' | 'saving' | 'saved' | 'offline';
 
 interface UseSpreadsheetDataReturn {
@@ -33,6 +41,8 @@ export function useSpreadsheetData(
   const [dataLoaded, setDataLoaded] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const monthRef = useRef(month);
+  const initializedUsersRef = useRef<Set<string>>(new Set());
+  const skipNextColumnsRef = useRef(false);
 
   const fetchAndSet = useCallback(async (uid: string, m: string) => {
     try {
@@ -47,6 +57,7 @@ export function useSpreadsheetData(
   const debouncedSave = useMemo(
     () => debounce(async (uid: string, m: string, cols: Column[], r: Row[]) => {
       try {
+        skipNextColumnsRef.current = true;
         await saveRemoteColumns(uid, cols);
         await saveRemoteMonthRows(uid, m, r);
         setSyncStatus('saved');
@@ -81,25 +92,20 @@ export function useSpreadsheetData(
     const init = async () => {
       try {
         const remoteColumns = await loadRemoteColumns(userId);
-        const existing = remoteColumns ?? [];
 
-        const DEFAULT_COLUMNS: Column[] = [
-          { id: 'date', name: 'Data', type: 'date' },
-          { id: 'desc', name: 'Descrição', type: 'text' },
-          { id: 'type', name: 'Tipo', type: 'select', options: ['Entrada', 'Saída'] },
-          { id: 'amount', name: 'Valor', type: 'number' },
-          { id: 'status', name: 'Status', type: 'select', options: ['Pendente', 'Pago'] },
-        ];
-
-        const existingIds = new Set(existing.map((c) => c.id));
-        const missing = DEFAULT_COLUMNS.filter((c) => !existingIds.has(c.id));
-
-        if (missing.length > 0) {
-          const merged = [...existing, ...missing];
-          setColumns(merged);
-          await saveRemoteColumns(userId, merged);
+        if (remoteColumns === null) {
+          if (!initializedUsersRef.current.has(userId)) {
+            setColumns(DEFAULT_COLUMNS);
+            await saveRemoteColumns(userId, DEFAULT_COLUMNS);
+            initializedUsersRef.current.add(userId);
+          }
+        } else if (remoteColumns.length === 0 && !initializedUsersRef.current.has(userId)) {
+          setColumns(DEFAULT_COLUMNS);
+          await saveRemoteColumns(userId, DEFAULT_COLUMNS);
+          initializedUsersRef.current.add(userId);
         } else {
-          setColumns(existing);
+          setColumns(remoteColumns);
+          initializedUsersRef.current.add(userId);
         }
 
         await ensureMonthTable(month);
@@ -140,6 +146,7 @@ export function useSpreadsheetData(
     const unsubscribe = subscribeToMonth(userId, month, {
       onRowEvent: handleRowEvent,
       onColumnsChange: setColumns,
+      skipNextColumnsRef,
     });
 
     return () => {
