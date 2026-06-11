@@ -215,14 +215,16 @@ body {
    MIDNIGHT PURPLE THEME
    ═══════════════════════════════════════════════════════════ */
 
-/* Base midnight: inherits from dark, overrides with purple tones */
 .midnight {
   color-scheme: dark;
 }
 
-/* Page background */
-body:has(#finance-app-root.midnight-root) {
-  background: #0d0a14;
+html.midnight {
+  background: var(--mp-bg);
+}
+html.midnight body {
+  min-height: 100vh;
+  background: var(--mp-bg);
 }
 
 .midnight-root {
@@ -239,133 +241,6 @@ body:has(#finance-app-root.midnight-root) {
   --mp-accent-dim: rgba(167, 139, 250, 0.15);
   --mp-hover: rgba(139, 92, 246, 0.06);
   --mp-highlight: rgba(139, 92, 246, 0.08);
-}
-
-/* Override dark theme classes for midnight */
-/* Backgrounds: override both base (light) and dark: variants */
-.midnight-root .bg-white,
-.midnight-root .bg-white\/70,
-.midnight-root .bg-white\/80,
-.midnight-root .bg-slate-50\/30,
-.midnight-root .bg-slate-50,
-.midnight-root .dark\:bg-\[\#161920\],
-.midnight-root .dark\:bg-\[\#161920\]\/80 {
-  background-color: var(--mp-surface) !important;
-}
-.midnight-root .dark\:bg-\[\#1A1E28\]\/90,
-.midnight-root .bg-slate-50\/80,
-.midnight-root .bg-slate-100\/80,
-.midnight-root .dark\:bg-\[\#1E222A\]\/80,
-.midnight-root .dark\:bg-\[\#1E222A\] {
-  background-color: var(--mp-surface-2) !important;
-}
-.midnight-root .dark\:bg-\[\#181C25\]\/40 {
-  background-color: var(--mp-surface-3) !important;
-}
-.midnight-root .dark\:bg-\[\#0F1115\] {
-  background-color: var(--mp-bg) !important;
-}
-/* Gradients: override base (light) and dark: variants */
-.midnight-root .from-slate-50,
-.midnight-root .dark\:from-\[\#0F1115\] {
-  --tw-gradient-from: var(--mp-bg) !important;
-}
-.midnight-root .via-white,
-.midnight-root .dark\:via-\[\#12141B\] {
-  --tw-gradient-via: var(--mp-surface) !important;
-}
-.midnight-root .to-slate-50,
-.midnight-root .dark\:to-\[\#0F1115\] {
-  --tw-gradient-to: var(--mp-bg) !important;
-}
-.midnight-root .dark\:from-\[\#161920\] {
-  --tw-gradient-from: var(--mp-surface) !important;
-}
-.midnight-root .dark\:via-\[\#1A1E28\]\/60 {
-  --tw-gradient-via: var(--mp-surface-2) !important;
-}
-.midnight-root .dark\:to-\[\#161920\] {
-  --tw-gradient-to: var(--mp-surface) !important;
-}
-
-/* Text: override both base and dark: variants */
-.midnight-root .text-slate-900,
-.midnight-root .dark\:text-slate-200,
-.midnight-root .dark\:text-slate-300 {
-  color: var(--mp-text) !important;
-}
-.midnight-root .text-slate-400,
-.midnight-root .text-slate-500,
-.midnight-root .dark\:text-slate-400,
-.midnight-root .dark\:text-slate-500 {
-  color: var(--mp-text-dim) !important;
-}
-.midnight-root .text-slate-600,
-.midnight-root .dark\:text-slate-600 {
-  color: var(--mp-text-muted) !important;
-}
-.midnight-root .dark\:text-white {
-  color: #f0eaf8 !important;
-}
-
-/* Borders: override both base and dark: variants */
-.midnight-root .border-slate-200\/50,
-.midnight-root .border-slate-200\/40,
-.midnight-root .dark\:border-slate-700\/60,
-.midnight-root .dark\:border-slate-700\/50,
-.midnight-root .dark\:border-slate-700\/40,
-.midnight-root .dark\:border-slate-700\/30,
-.midnight-root .dark\:border-slate-800\/50 {
-  border-color: var(--mp-border) !important;
-}
-.midnight-root .dark\:border-slate-700\/50 {
-  border-color: var(--mp-border-strong) !important;
-}
-
-/* Shadows */
-.midnight-root .dark\:shadow-xl,
-.midnight-root .dark\:shadow-lg {
-  box-shadow: 0 8px 32px rgba(88, 28, 135, 0.15) !important;
-}
-.midnight-root .dark\:shadow-black\/10,
-.midnight-root .dark\:shadow-black\/20 {
-  box-shadow: 0 4px 16px rgba(88, 28, 135, 0.12) !important;
-}
-
-/* Accent color override: use purple instead of indigo/blue */
-.midnight-root .text-blue-500,
-.midnight-root .dark\:text-indigo-400 {
-  color: var(--mp-accent) !important;
-}
-.midnight-root .bg-indigo-600,
-.midnight-root .dark\:bg-indigo-500\/15,
-.midnight-root .dark\:bg-indigo-500\/10 {
-  background-color: var(--mp-accent-dim) !important;
-}
-.midnight-root .dark\:border-indigo-500\/20 {
-  border-color: rgba(167, 139, 250, 0.25) !important;
-}
-.midnight-root .from-blue-600,
-.midnight-root .from-indigo-600,
-.midnight-root .dark\:from-indigo-600,
-.midnight-root .dark\:from-indigo-500 {
-  --tw-gradient-from: #7c3aed !important;
-}
-.midnight-root .to-indigo-600,
-.midnight-root .dark\:to-indigo-500,
-.midnight-root .dark\:to-indigo-400 {
-  --tw-gradient-to: #a78bfa !important;
-}
-
-/* Hover states */
-.midnight-root .dark\:hover\:bg-\[\#252A34\],
-.midnight-root .dark\:hover\:bg-white\/5,
-.midnight-root .hover\:bg-white {
-  --tw-bg-opacity: 1;
-  background-color: var(--mp-surface-3) !important;
-}
-.midnight-root .dark\:hover\:bg-\[\#1E222A\]\/60 {
-  background-color: var(--mp-hover) !important;
 }
 
 /* Row/col highlights */
@@ -387,16 +262,13 @@ body:has(#finance-app-root.midnight-root) {
 .midnight-root .mobile-card-row {
   border-bottom-color: var(--mp-border) !important;
 }
-.midnight-root .dark\:bg-\[\#1E222A\] {
-  background-color: var(--mp-surface-2) !important;
-}
 
-/* Focus ring for midnight */
+/* Focus ring */
 .midnight-root :focus-visible {
   outline-color: var(--mp-accent);
 }
 
-/* Selection highlight */
+/* Selection */
 .midnight-root ::selection {
   background: #7c3aed;
   color: white;

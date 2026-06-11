@@ -2,6 +2,8 @@ import { motion, useSpring, useTransform, useMotionValue } from 'motion/react';
 import { useEffect, useRef } from 'react';
 import { LucideIcon } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
+import type { Theme } from '../utils/storage';
+import { mp } from '../utils/theme';
 
 interface KPICardProps {
   id: string;
@@ -10,8 +12,8 @@ interface KPICardProps {
   icon: LucideIcon;
   variant: 'green' | 'red' | 'indigo' | 'mixed';
   subtitle?: string;
-  /** Optional reference value to calculate ratio bars (e.g. income for expense ratio) */
   referenceValue?: number;
+  theme?: Theme;
 }
 
 interface VariantStyle {
@@ -104,6 +106,7 @@ export default function KPICard({
   variant,
   subtitle,
   referenceValue,
+  theme = 'light',
 }: KPICardProps) {
   const isNeg = value < 0;
   const key = variant === 'mixed' ? (isNeg ? 'red' : 'indigo') : variant;
@@ -123,6 +126,10 @@ export default function KPICard({
       whileHover={{
         y: -4,
         transition: { duration: 0.2, ease: 'easeOut' },
+      }}
+      style={{
+        backgroundColor: mp(theme, 'surface'),
+        borderColor: mp(theme, 'border'),
       }}
       className="group relative overflow-hidden rounded-2xl border border-slate-200/60 dark:border-slate-700/50 bg-white dark:bg-[#161920] shadow-sm hover:shadow-md dark:hover:shadow-xl dark:hover:shadow-black/20 transition-all duration-300"
     >

@@ -26,6 +26,7 @@ import { useSpreadsheetData } from './hooks/useSpreadsheetData';
 import { useUndoRedo } from './hooks/useUndoRedo';
 import { useTheme } from './hooks/useTheme';
 import { coerceDateInMonth } from './utils/dateCoercion';
+import { mp } from './utils/theme';
 import { DEFAULT_MONTH } from './constants';
 
 export default function App() {
@@ -117,29 +118,38 @@ export default function App() {
   }[syncStatus];
 
   return (
-    <div id="finance-app-root" className={`min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-50 dark:from-[#0F1115] dark:via-[#12141B] dark:to-[#0F1115] text-slate-900 dark:text-slate-200 transition-colors duration-300 ${theme === 'midnight' ? 'midnight-root' : ''}`}>
+    <div id="finance-app-root" style={{
+      background: mp(theme, 'bg'),
+    }} className={`min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-50 dark:from-[#0F1115] dark:via-[#12141B] dark:to-[#0F1115] text-slate-900 dark:text-slate-200 transition-colors duration-300 ${theme === 'midnight' ? 'midnight-root' : ''}`}>
       {/* Header with glass effect */}
-      <header id="main-header" className="sticky top-0 z-30 bg-white/70 dark:bg-[#161920]/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 py-4 transition-colors duration-300 shadow-sm dark:shadow-lg dark:shadow-black/10">
+      <header id="main-header" style={{
+        backgroundColor: mp(theme, 'surface'),
+        borderBottomColor: mp(theme, 'border'),
+        color: mp(theme, 'text'),
+      }} className="sticky top-0 z-30 bg-white/70 dark:bg-[#161920]/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 py-4 transition-colors duration-300 shadow-sm dark:shadow-lg dark:shadow-black/10">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-linear-to-br from-blue-600 to-indigo-600 dark:from-indigo-500 dark:to-indigo-600 rounded-xl text-white shadow-md shadow-blue-500/20 dark:shadow-indigo-500/20">
               <LayoutGrid className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
-                FinanSpread<span className="text-blue-500 dark:text-indigo-400 font-light italic">OS</span>
+              <h1 style={{ color: mp(theme, 'text') }} className="text-xl md:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+                FinanSpread<span style={{ color: mp(theme, 'accent') }} className="text-blue-500 dark:text-indigo-400 font-light italic">OS</span>
               </h1>
-              <p className="text-xs text-slate-400 dark:text-slate-500">
+              <p style={{ color: mp(theme, 'textDim') }} className="text-xs text-slate-400 dark:text-slate-500">
                 Planilha inteligente de controle financeiro pessoal
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-0.5 bg-slate-100/80 dark:bg-[#1E222A]/80 rounded-lg border border-slate-200/40 dark:border-slate-700/50 p-0.5 shadow-xs">
+            <div style={{
+              backgroundColor: mp(theme, 'surface2'),
+              borderColor: mp(theme, 'border'),
+            }} className="flex items-center gap-0.5 bg-slate-100/80 dark:bg-[#1E222A]/80 rounded-lg border border-slate-200/40 dark:border-slate-700/50 p-0.5 shadow-xs">
               <button id="btn-prev-month" onClick={handlePrevMonth} title="Mês anterior" className="p-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-[#252A34] rounded transition active:scale-90">
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="px-3 text-2xs md:text-xs font-semibold text-slate-700 dark:text-slate-300 min-w-[110px] md:min-w-[120px] text-center select-none font-mono tracking-wide">
+              <span style={{ color: mp(theme, 'text') }} className="px-3 text-2xs md:text-xs font-semibold text-slate-700 dark:text-slate-300 min-w-[110px] md:min-w-[120px] text-center select-none font-mono tracking-wide">
                 {formatMonthLabel(selectedMonth).toUpperCase()}
               </span>
               <button id="btn-next-month" onClick={handleNextMonth} title="Próximo mês" className="p-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-[#252A34] rounded transition active:scale-90">
@@ -172,6 +182,7 @@ export default function App() {
             icon={TrendingUp}
             variant="green"
             subtitle="Soma de valores positivos / créditos"
+            theme={theme}
           />
           <KPICard
             id="kpi-saidas"
@@ -181,6 +192,7 @@ export default function App() {
             variant="red"
             subtitle="Soma de saídas / débitos categorizados"
             referenceValue={entradas}
+            theme={theme}
           />
           <KPICard
             id="kpi-saldo"
@@ -189,6 +201,7 @@ export default function App() {
             icon={Wallet}
             variant="mixed"
             subtitle="Patrimônio líquido calculado"
+            theme={theme}
           />
         </div>
 
@@ -196,13 +209,13 @@ export default function App() {
         <section id="spreadsheet-section" className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <h2 style={{ color: mp(theme, 'text') }} className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <div className="w-6 h-6 rounded-lg bg-linear-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
                   <Layers className="w-3.5 h-3.5 text-white" />
                 </div>
                 Lançamentos Financeiros
               </h2>
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 ml-8">
+              <p style={{ color: mp(theme, 'textDim') }} className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 ml-8">
                 Utilize as colunas dinâmicas para registrar datas, valores e categorias como desejar.
               </p>
             </div>
