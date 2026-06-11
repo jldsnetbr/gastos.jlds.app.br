@@ -1,6 +1,6 @@
 import { ReactNode, memo } from 'react';
 import { Column, Row } from '../types';
-import { formatNumberCell, formatSelectCell, formatTextCell } from '../utils/cellFormat';
+import { formatNumberCell, formatSelectCell } from '../utils/cellFormat';
 
 interface CellRendererProps {
   column: Column;
@@ -34,11 +34,12 @@ function CellRenderer({ column, value, row, columns }: CellRendererProps): React
     );
   }
 
-  const { text, isEmpty } = formatTextCell(value);
-  if (isEmpty) {
-    return <span className="text-slate-300 dark:text-slate-600 italic">{text}</span>;
+  // Text cells: show dash for empty
+  const strVal = String(value);
+  if (!strVal) {
+    return <span className="text-slate-300 dark:text-slate-600 select-none">—</span>;
   }
-  return <>{text}</>;
+  return <>{strVal}</>;
 }
 
 export default memo(CellRenderer);

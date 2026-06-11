@@ -11,8 +11,6 @@ import {
   ChevronRight,
   LogOut,
   Loader2,
-  CloudOff,
-  Cloud,
   Loader,
 } from 'lucide-react';
 import { Column, Row, HistoryState } from './types';
@@ -114,12 +112,19 @@ export default function App() {
     return <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><Loader className="w-6 h-6 animate-spin text-slate-400" /></div>}><Auth /></Suspense>;
   }
 
-  const syncIcon = {
-    idle: null,
-    saving: <Loader className="w-3.5 h-3.5 animate-spin text-slate-400" />,
-    saved: <Cloud className="w-3.5 h-3.5 text-emerald-500" />,
-    offline: <CloudOff className="w-3.5 h-3.5 text-amber-500" />,
-    error: <CloudOff className="w-3.5 h-3.5 text-rose-500" />,
+  const syncDotClass = {
+    idle: 'sync-dot sync-dot-idle',
+    saving: 'sync-dot sync-dot-saving',
+    saved: 'sync-dot sync-dot-saved',
+    offline: 'sync-dot sync-dot-offline',
+    error: 'sync-dot sync-dot-error',
+  }[syncStatus];
+  const syncLabel = {
+    idle: '',
+    saving: 'Salvando...',
+    saved: 'Salvo',
+    offline: 'Offline',
+    error: 'Erro ao salvar',
   }[syncStatus];
 
   return (
@@ -152,9 +157,10 @@ export default function App() {
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-            {syncIcon && (
-              <div className="p-1.5" title={syncStatus === 'offline' ? 'Offline - será sincronizado depois' : syncStatus === 'saving' ? 'Salvando...' : 'Salvo'}>
-                {syncIcon}
+            {syncStatus !== 'idle' && (
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg" title={syncLabel}>
+                <span className={syncDotClass} />
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400 hidden sm:inline">{syncLabel}</span>
               </div>
             )}
             <button id="theme-toggler" onClick={() => setDarkMode(!darkMode)} title="Trocar tema" className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-[#1E222A]/80 rounded-lg border border-slate-200/40 dark:border-slate-700/50 transition active:scale-90">

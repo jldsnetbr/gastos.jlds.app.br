@@ -2,12 +2,32 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>FinanSpreadOS - Controle Financeiro</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#6366f1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="FinanSpread" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+
+    <!-- SEO -->
+    <meta name="description" content="Planilha inteligente de controle financeiro pessoal com sync em tempo real." />
+    <meta name="keywords" content="finanças, controle financeiro, planilha, orçamento pessoal" />
+    <meta property="og:title" content="FinanSpreadOS" />
+    <meta property="og:description" content="Planilha inteligente de controle financeiro pessoal" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://gastos.jlds.app.br" />
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

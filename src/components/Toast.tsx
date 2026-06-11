@@ -4,6 +4,10 @@ import { motion, AnimatePresence } from 'motion/react';
 export interface ToastData {
   message: string;
   type: 'success' | 'error' | 'info';
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
 }
 
 interface ToastProps {
@@ -48,6 +52,14 @@ export default function Toast({ toast, onDismiss }: ToastProps) {
             )}
           </div>
           <span>{toast.message}</span>
+          {toast.action && (
+            <button
+              onClick={toast.action.onClick}
+              className="ml-1 px-2.5 py-1 text-xs font-bold rounded-lg bg-black/10 dark:bg-white/10 hover:bg-black/20 dark:hover:bg-white/20 transition"
+            >
+              {toast.action.label}
+            </button>
+          )}
           <button
             id="btn-dismiss-toast"
             onClick={onDismiss}

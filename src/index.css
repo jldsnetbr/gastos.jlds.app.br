@@ -78,3 +78,135 @@ body {
 .dark * {
   scrollbar-color: #334155 transparent;
 }
+
+/* ===== STICKY COLUMNS ===== */
+.sticky-col-first {
+  position: sticky;
+  left: 0;
+  z-index: 15;
+}
+
+.sticky-col-actions {
+  position: sticky;
+  right: 0;
+  z-index: 15;
+}
+
+/* ===== ROW HIGHLIGHT ON FOCUS ===== */
+.row-highlight {
+  background-color: rgba(99, 102, 241, 0.04) !important;
+}
+.dark .row-highlight {
+  background-color: rgba(99, 102, 241, 0.06) !important;
+}
+
+/* ===== COL HIGHLIGHT ON FOCUS ===== */
+.col-highlight {
+  background-color: rgba(99, 102, 241, 0.03) !important;
+}
+.dark .col-highlight {
+  background-color: rgba(99, 102, 241, 0.05) !important;
+}
+
+/* ===== LATERAL COLOR INDICATOR ===== */
+.row-indicator-entrada {
+  border-left: 3px solid #10b981;
+}
+.row-indicator-saida {
+  border-left: 3px solid #f43f5e;
+}
+.row-indicator-neutral {
+  border-left: 3px solid transparent;
+}
+
+/* ===== HOVER ROW ===== */
+#excel-spreadsheet-table tbody tr:hover td {
+  background-color: rgba(99, 102, 241, 0.03);
+}
+.dark #excel-spreadsheet-table tbody tr:hover td {
+  background-color: rgba(99, 102, 241, 0.05);
+}
+
+/* ===== SYNC DOT ===== */
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.sync-dot-idle { display: none; }
+.sync-dot-saving {
+  background-color: #f59e0b;
+  animation: pulse-dot 1s infinite;
+}
+.sync-dot-saved {
+  background-color: #10b981;
+}
+.sync-dot-offline {
+  background-color: #f59e0b;
+}
+.sync-dot-error {
+  background-color: #f43f5e;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}
+
+/* ===== MOBILE CARD VIEW ===== */
+@media (max-width: 767px) {
+  .mobile-card {
+    background: white;
+    border: 1px solid rgba(226, 232, 240, 0.6);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 8px;
+    position: relative;
+    transition: all 0.15s;
+  }
+  .dark .mobile-card {
+    background: #161920;
+    border-color: rgba(51, 65, 85, 0.5);
+  }
+  .mobile-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .dark .mobile-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .mobile-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.4);
+  }
+  .dark .mobile-card-row {
+    border-bottom-color: rgba(51, 65, 85, 0.3);
+  }
+  .mobile-card-row:last-child {
+    border-bottom: none;
+  }
+  .mobile-card-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .dark .mobile-card-label {
+    color: #64748b;
+  }
+  .mobile-card-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1e293b;
+    text-align: right;
+    max-width: 60%;
+    word-break: break-word;
+  }
+  .dark .mobile-card-value {
+    color: #e2e8f0;
+  }
+}
