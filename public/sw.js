@@ -1,7 +1,5 @@
-const CACHE_NAME = 'finanspread-v1';
-const PRECACHE = [
-  '/',
-];
+const CACHE_NAME = 'finanspread-v2';
+const PRECACHE = [];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -22,13 +20,11 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Only cache GET requests, skip API calls
   if (event.request.method !== 'GET') return;
   if (event.request.url.includes('supabase')) return;
 
   event.respondWith(
     caches.match(event.request).then((cached) => {
-      // Network-first for HTML, cache-first for assets
       if (event.request.mode === 'navigate') {
         return fetch(event.request)
           .then((response) => {

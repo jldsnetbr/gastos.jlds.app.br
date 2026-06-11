@@ -16,24 +16,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then((res) => {
-      setUser(res.data.session?.user ?? null);
-    }).catch(() => {
-      setUser(null);
-    }).finally(() => {
-      setLoading(false);
-    });
-
+    // 1. Register listener FIRST to catch SIGNED_IN from hash redirect
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, s: Session | null) => {
       setUser(s?.user ?? null);
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    // 2. getSession as fallback (does not set loading)
+    supabase.auth.getSession().then((res) => {
+      setUser(res.data.session?.user ?? null);
+    }).catch(() => setUser(null));
+
+    // 3. Safety timeout: stop loading after 3s even if nothing fires
+    const timeout = setTimeout(() => setLoading(false), 3000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
 
   const signInWithOtp = async (email: string) => {
-    const { error } = await supabase.auth.signInWithOtp({ email });
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: window.location.origin,
+      },
+    });
     return { error: error?.message };
   };
 
