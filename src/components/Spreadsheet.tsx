@@ -10,7 +10,6 @@ import AddColumnModal from './AddColumnModal';
 import DeleteColumnModal from './DeleteColumnModal';
 import ColumnSettingsMenu from './ColumnSettingsMenu';
 import CellRenderer from './CellRenderer';
-import SelectEditor from './SelectEditor';
 import SpreadsheetToolbar from './SpreadsheetToolbar';
 import SpreadsheetFooter from './SpreadsheetFooter';
 import { coerceDateInMonth } from '../utils/dateCoercion';
@@ -720,32 +719,30 @@ export default function Spreadsheet({
                             }`}
                             >
                             {isEditing ? (
-                                col.type === 'select' ? (
-                                  <SelectEditor
-                                    options={col.options || ['Entrada', 'Saída']}
-                                    value={editValue}
-                                    rowId={row.id}
-                                    colId={col.id}
-                                    columns={columns}
-                                    rows={rows}
-                                    selectedMonth={selectedMonth}
-                                    onDataChange={onDataChange}
-                                    onStartEditing={handleStartEditing}
-                                    onClose={() => setEditingCell(null)}
-                                  />
-                              ) : (
                                 <input
                                   id={`edit-input-${row.id}-${col.id}`}
                                   ref={editInputRef}
-                                  type={col.type === 'number' ? 'text' : col.type}
+                                  type={col.type === 'number' ? 'text' : 'text'}
                                   value={editValue}
                                   onChange={(e) => setEditValue(e.target.value)}
-                                  onBlur={() => handleSaveCell(row.id, col.id)}
+                                  onBlur={() => {
+                                    // Validate select columns on blur
+                                    if (col.type === 'select') {
+                                      const valid = (col.options || ['Entrada', 'Saída']);
+                                      const match = valid.find(
+                                        (o) => o.toLowerCase() === editValue.toLowerCase()
+                                      );
+                                      if (match && match !== editValue) {
+                                        setEditValue(match);
+                                      }
+                                    }
+                                    handleSaveCell(row.id, col.id);
+                                  }}
                                   onKeyDown={(e) => handleKeyDown(e, row.id, col.id)}
+                                  placeholder={col.type === 'select' ? 'Entrada ou Saída' : ''}
                                   autoFocus
                                   className="w-full h-8 text-sm border-0 focus:ring-1 focus:ring-indigo-400/40 px-2 py-0.5 rounded bg-white dark:bg-[#161920] text-slate-900 dark:text-white focus:outline-none"
                                 />
-                              )
                             ) : (
                               <div id={`cell-text-render-${row.id}-${col.id}`} className="min-h-[20px] flex items-center overflow-hidden text-ellipsis">
                                 <span className="w-full truncate"><CellRenderer column={col} value={value} row={row} columns={columns} /></span>
