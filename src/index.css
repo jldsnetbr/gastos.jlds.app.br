@@ -210,3 +210,181 @@ body {
     color: #e2e8f0;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   MIDNIGHT PURPLE THEME
+   ═══════════════════════════════════════════════════════════ */
+
+/* Base midnight: inherits from dark, overrides with purple tones */
+.midnight {
+  color-scheme: dark;
+}
+
+/* Page background */
+body:has(#finance-app-root.midnight-root) {
+  background: #0d0a14;
+}
+
+.midnight-root {
+  --mp-bg: #0d0a14;
+  --mp-surface: #14101e;
+  --mp-surface-2: #1a1528;
+  --mp-surface-3: #211b33;
+  --mp-border: rgba(139, 92, 246, 0.12);
+  --mp-border-strong: rgba(139, 92, 246, 0.2);
+  --mp-text: #e8e0f0;
+  --mp-text-dim: #9585b0;
+  --mp-text-muted: #6b5a85;
+  --mp-accent: #a78bfa;
+  --mp-accent-dim: rgba(167, 139, 250, 0.15);
+  --mp-hover: rgba(139, 92, 246, 0.06);
+  --mp-highlight: rgba(139, 92, 246, 0.08);
+}
+
+/* Override dark theme classes for midnight */
+.midnight-root .bg-white,
+.midnight-root .bg-slate-50\/30,
+.midnight-root .dark\:bg-\[\#161920\] {
+  background-color: var(--mp-surface) !important;
+}
+.midnight-root .dark\:bg-\[\#1A1E28\]\/90,
+.midnight-root .bg-slate-50\/80 {
+  background-color: var(--mp-surface-2) !important;
+}
+.midnight-root .dark\:bg-\[\#1E222A\]\/80,
+.midnight-root .dark\:bg-\[\#1E222A\] {
+  background-color: var(--mp-surface-2) !important;
+}
+.midnight-root .dark\:bg-\[\#181C25\]\/40 {
+  background-color: var(--mp-surface-3) !important;
+}
+.midnight-root .dark\:bg-\[\#0F1115\] {
+  background-color: var(--mp-bg) !important;
+}
+.midnight-root .dark\:from-\[\#0F1115\] {
+  --tw-gradient-from: var(--mp-bg) !important;
+}
+.midnight-root .dark\:via-\[\#12141B\] {
+  --tw-gradient-via: var(--mp-surface) !important;
+}
+.midnight-root .dark\:to-\[\#0F1115\] {
+  --tw-gradient-to: var(--mp-bg) !important;
+}
+.midnight-root .dark\:from-\[\#161920\] {
+  --tw-gradient-from: var(--mp-surface) !important;
+}
+.midnight-root .dark\:via-\[\#1A1E28\]\/60 {
+  --tw-gradient-via: var(--mp-surface-2) !important;
+}
+.midnight-root .dark\:to-\[\#161920\] {
+  --tw-gradient-to: var(--mp-surface) !important;
+}
+
+/* Text */
+.midnight-root .dark\:text-slate-200,
+.midnight-root .dark\:text-slate-300 {
+  color: var(--mp-text) !important;
+}
+.midnight-root .dark\:text-slate-400,
+.midnight-root .dark\:text-slate-500 {
+  color: var(--mp-text-dim) !important;
+}
+.midnight-root .dark\:text-slate-600 {
+  color: var(--mp-text-muted) !important;
+}
+.midnight-root .dark\:text-white {
+  color: #f0eaf8 !important;
+}
+
+/* Borders */
+.midnight-root .dark\:border-slate-700\/60,
+.midnight-root .dark\:border-slate-700\/50,
+.midnight-root .dark\:border-slate-700\/40,
+.midnight-root .dark\:border-slate-700\/30,
+.midnight-root .dark\:border-slate-800\/50,
+.midnight-root .dark\:border-slate-200\/50 {
+  border-color: var(--mp-border) !important;
+}
+.midnight-root .dark\:border-slate-700\/50 {
+  border-color: var(--mp-border-strong) !important;
+}
+
+/* Shadows */
+.midnight-root .dark\:shadow-xl,
+.midnight-root .dark\:shadow-lg {
+  box-shadow: 0 8px 32px rgba(88, 28, 135, 0.15) !important;
+}
+.midnight-root .dark\:shadow-black\/10,
+.midnight-root .dark\:shadow-black\/20 {
+  box-shadow: 0 4px 16px rgba(88, 28, 135, 0.12) !important;
+}
+
+/* Accent color override: use purple instead of indigo */
+.midnight-root .dark\:text-indigo-400 {
+  color: var(--mp-accent) !important;
+}
+.midnight-root .dark\:bg-indigo-500\/15,
+.midnight-root .dark\:bg-indigo-500\/10 {
+  background-color: var(--mp-accent-dim) !important;
+}
+.midnight-root .dark\:border-indigo-500\/20 {
+  border-color: rgba(167, 139, 250, 0.25) !important;
+}
+.midnight-root .dark\:from-indigo-600,
+.midnight-root .dark\:from-indigo-500 {
+  --tw-gradient-from: #7c3aed !important;
+}
+.midnight-root .dark\:to-indigo-500,
+.midnight-root .dark\:to-indigo-400 {
+  --tw-gradient-to: #a78bfa !important;
+}
+
+/* Hover states */
+.midnight-root .dark\:hover\:bg-\[\#252A34\],
+.midnight-root .dark\:hover\:bg-white\/5,
+.midnight-root .hover\:bg-white {
+  --tw-bg-opacity: 1;
+  background-color: var(--mp-surface-3) !important;
+}
+.midnight-root .dark\:hover\:bg-\[\#1E222A\]\/60 {
+  background-color: var(--mp-hover) !important;
+}
+
+/* Row/col highlights */
+.midnight-root .row-highlight {
+  background-color: rgba(167, 139, 250, 0.06) !important;
+}
+.midnight-root .col-highlight {
+  background-color: rgba(167, 139, 250, 0.05) !important;
+}
+.midnight-root #excel-spreadsheet-table tbody tr:hover td {
+  background-color: rgba(167, 139, 250, 0.05) !important;
+}
+
+/* Mobile cards */
+.midnight-root .mobile-card {
+  background: var(--mp-surface);
+  border-color: var(--mp-border);
+}
+.midnight-root .mobile-card-row {
+  border-bottom-color: var(--mp-border) !important;
+}
+.midnight-root .dark\:bg-\[\#1E222A\] {
+  background-color: var(--mp-surface-2) !important;
+}
+
+/* Focus ring for midnight */
+.midnight-root :focus-visible {
+  outline-color: var(--mp-accent);
+}
+
+/* Selection highlight */
+.midnight-root ::selection {
+  background: #7c3aed;
+  color: white;
+}
+
+/* Scrollbar */
+.midnight-root * {
+  scrollbar-color: rgba(139, 92, 246, 0.3) transparent;
+}

@@ -21,7 +21,7 @@ const Auth = lazy(() => import('./pages/Auth'));
 import { useAuth } from './contexts/AuthContext';
 import { calculateSummary } from './utils/financeHelper';
 import { navigateMonth, formatMonthLabel } from './utils/monthUtils';
-import { getTheme, setTheme } from './utils/storage';
+import { getTheme, setTheme, Theme } from './utils/storage';
 import { useSpreadsheetData } from './hooks/useSpreadsheetData';
 import { coerceDateInMonth } from './utils/dateCoercion';
 import { DEFAULT_MONTH, MAX_HISTORY_SIZE } from './constants';
@@ -31,7 +31,7 @@ export default function App() {
   const [selectedMonth, setSelectedMonth] = useState<string>(DEFAULT_MONTH);
   const [history, setHistory] = useState<HistoryState[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
-  const [darkMode, setDarkMode] = useState<boolean>(() => getTheme() === 'dark');
+  const [theme, setThemeState] = useState<Theme>(() => getTheme());
 
   const { columns, rows, dataLoaded, syncStatus, setColumns, setRows } = useSpreadsheetData(
     user?.id,
@@ -47,14 +47,27 @@ export default function App() {
 
   useEffect(() => {
     const root = window.document.documentElement;
-    if (darkMode) {
+    root.classList.remove('dark', 'midnight');
+    if (theme === 'dark') {
       root.classList.add('dark');
-      setTheme('dark');
-    } else {
-      root.classList.remove('dark');
-      setTheme('light');
+    } else if (theme === 'midnight') {
+      root.classList.add('dark', 'midnight');
     }
-  }, [darkMode]);
+    setTheme(theme);
+  }, [theme]);
+
+  const cycleTheme = () => {
+    const next: Theme = theme === 'light' ? 'dark' : theme === 'dark' ? 'midnight' : 'light';
+    setThemeState(next);
+  };
+
+  const themeIcon = theme === 'light'
+    ? <Moon className="w-[18px] h-[18px]" />
+    : theme === 'dark'
+      ? <Sun className="w-[18px] h-[18px] text-amber-400" />
+      : <span className="text-[14px] leading-none">🟣</span>;
+
+  const themeLabel = theme === 'light' ? 'Dark' : theme === 'dark' ? 'Midnight' : 'Light';
 
   const handlePrevMonth = () => setSelectedMonth(navigateMonth(selectedMonth, 'prev'));
   const handleNextMonth = () => setSelectedMonth(navigateMonth(selectedMonth, 'next'));
@@ -128,7 +141,7 @@ export default function App() {
   }[syncStatus];
 
   return (
-    <div id="finance-app-root" className="min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-50 dark:from-[#0F1115] dark:via-[#12141B] dark:to-[#0F1115] text-slate-900 dark:text-slate-200 transition-colors duration-300">
+    <div id="finance-app-root" className={`min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-50 dark:from-[#0F1115] dark:via-[#12141B] dark:to-[#0F1115] text-slate-900 dark:text-slate-200 transition-colors duration-300 ${theme === 'midnight' ? 'midnight-root' : ''}`}>
       {/* Header with glass effect */}
       <header id="main-header" className="sticky top-0 z-30 bg-white/70 dark:bg-[#161920]/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 py-4 transition-colors duration-300 shadow-sm dark:shadow-lg dark:shadow-black/10">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
@@ -163,8 +176,8 @@ export default function App() {
                 <span className="text-xs font-medium text-slate-500 dark:text-slate-400 hidden sm:inline">{syncLabel}</span>
               </div>
             )}
-            <button id="theme-toggler" onClick={() => setDarkMode(!darkMode)} title="Trocar tema" className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-[#1E222A]/80 rounded-lg border border-slate-200/40 dark:border-slate-700/50 transition active:scale-90">
-              {darkMode ? <Sun className="w-[18px] h-[18px] text-amber-400" /> : <Moon className="w-[18px] h-[18px]" />}
+            <button id="theme-toggler" onClick={cycleTheme} title={`Tema: ${themeLabel}`} className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-[#1E222A]/80 rounded-lg border border-slate-200/40 dark:border-slate-700/50 transition active:scale-90">
+              {themeIcon}
             </button>
             <button id="btn-signout" onClick={signOut} title="Sair" className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-[#1E222A]/80 rounded-lg border border-slate-200/40 dark:border-slate-700/50 transition active:scale-90">
               <LogOut className="w-[18px] h-[18px]" />
