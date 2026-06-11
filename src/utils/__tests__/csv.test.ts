@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseCSV, toCSV } from '../csv';
-import { Column } from '../../types';
+import type { Column } from '../../types';
 
 describe('parseCSV', () => {
   it('parses CSV with headers and rows', () => {

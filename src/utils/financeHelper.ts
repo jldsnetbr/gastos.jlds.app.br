@@ -1,4 +1,4 @@
-import { Column, Row } from '../types';
+import type { Column, Row } from '../types';
 
 export interface FinanceSummary {
   entradas: number;

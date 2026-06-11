@@ -1,5 +1,5 @@
-import { ReactNode, memo } from 'react';
-import { Column, Row } from '../types';
+import { type ReactNode, memo } from 'react';
+import type { Column, Row } from '../types';
 import { formatNumberCell, formatSelectCell } from '../utils/cellFormat';
 
 interface CellRendererProps {

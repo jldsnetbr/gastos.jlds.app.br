@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getTheme, setTheme as persistTheme, Theme } from '../utils/storage';
+import { getTheme, setTheme as persistTheme, type Theme } from '../utils/storage';
 
 export function useTheme() {
   const [theme, setThemeState] = useState<Theme>(() => getTheme());

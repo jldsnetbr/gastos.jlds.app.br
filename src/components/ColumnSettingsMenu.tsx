@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { ArrowLeft, ArrowRight, Trash2, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Column, ColumnType } from '../types';
+import type { Column, ColumnType } from '../types';
 
 interface ColumnSettingsMenuProps {
   column: Column;

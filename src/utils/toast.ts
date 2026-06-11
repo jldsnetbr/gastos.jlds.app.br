@@ -1,5 +1,5 @@
-import { Dispatch, SetStateAction } from 'react';
-import { ToastData } from '../components/Toast';
+import type { Dispatch, SetStateAction } from 'react';
+import type { ToastData } from '../components/Toast';
 
 export function showToast(
   setToast: Dispatch<SetStateAction<ToastData | null>>,

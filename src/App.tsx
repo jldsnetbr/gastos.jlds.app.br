@@ -11,9 +11,8 @@ import {
   ChevronRight,
   LogOut,
   Loader2,
-  Loader,
 } from 'lucide-react';
-import { Column, Row } from './types';
+import type { Column, Row } from './types';
 import KPICard from './components/KPICard';
 import { SectionErrorBoundary } from './components/SectionErrorBoundary';
 
@@ -101,7 +100,7 @@ export default function App() {
   }
 
   if (!user) {
-    return <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><Loader className="w-6 h-6 animate-spin text-slate-400" /></div>}><Auth /></Suspense>;
+    return <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><Loader2 className="w-6 h-6 animate-spin text-slate-400" /></div>}><Auth /></Suspense>;
   }
 
   const syncDotClass = {

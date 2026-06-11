@@ -1,4 +1,4 @@
-import { Column, Row, ColumnType } from '../types';
+import type { Column, Row, ColumnType } from '../types';
 
 export interface ParseCSVResult {
   columns: Column[];

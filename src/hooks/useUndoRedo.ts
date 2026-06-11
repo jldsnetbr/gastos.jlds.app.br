@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { HistoryState } from '../types';
+import type { HistoryState } from '../types';
 import { MAX_HISTORY_SIZE } from '../constants';
 
 interface UseUndoRedoReturn {

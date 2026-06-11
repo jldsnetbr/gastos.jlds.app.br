@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import Spreadsheet from '../Spreadsheet';
-import { Column, Row } from '../../types';
+import type { Column, Row } from '../../types';
 
 const mockColumns: Column[] = [
   { id: 'descricao', name: 'Descrição', type: 'text' },

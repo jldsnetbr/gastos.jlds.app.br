@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { calculateSummary } from '../financeHelper';
-import { Column, Row } from '../../types';
+import type { Column, Row } from '../../types';
 import { formatCurrency } from '../format';
 
 describe('calculateSummary', () => {

@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { getMonthTableName } from '../lib/tableNames';
-import { Column, ColumnType, Row } from '../types';
+import type { Column, ColumnType, Row } from '../types';
 import type React from 'react';
 
 export type RealtimeEventType = 'INSERT' | 'UPDATE' | 'DELETE';

@@ -64,13 +64,4 @@ const mock = {
 /** Export the typed client (falls back to mock when env vars missing) */
 export const supabase: TypedSupabase = realClient ?? mock;
 
-/**
- * Shape of rows in dynamic month tables (rows_YYYY_MM).
- * Created at runtime, not in Database type.
- */
-export interface DynamicRow {
-  row_id: string;
-  user_id: string;
-  data: Record<string, string | number | null>;
-  created_at: string;
-}
+export type { DynamicRow } from '../types';

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Column, Row } from '../../types';
+import type { Column, Row } from '../../types';
 import { formatNumberCell, formatSelectCell, formatTextCell } from '../cellFormat';
 
 const columns: Column[] = [

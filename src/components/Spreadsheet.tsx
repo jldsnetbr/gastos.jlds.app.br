@@ -4,8 +4,8 @@ import {
   FileSpreadsheet,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Column, Row, ColumnType } from '../types';
-import Toast, { ToastData } from './Toast';
+import type { Column, Row, ColumnType } from '../types';
+import Toast, { type ToastData } from './Toast';
 import AddColumnModal from './AddColumnModal';
 import DeleteColumnModal from './DeleteColumnModal';
 import ColumnSettingsMenu from './ColumnSettingsMenu';
@@ -218,7 +218,7 @@ export default function Spreadsheet({
         },
       });
     },
-    [columns, rows, onDataChange],
+    [columns, rows, onDataChange, showLocalToast],
   );
 
   /* ── keyboard: Enter → next column, Tab → next col / auto-row ── */

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { X, Columns } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ColumnType } from '../types';
+import type { ColumnType } from '../types';
 
 interface AddColumnModalProps {
   isOpen: boolean;

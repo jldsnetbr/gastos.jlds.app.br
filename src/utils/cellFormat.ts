@@ -1,4 +1,4 @@
-import { Column, Row } from '../types';
+import type { Column, Row } from '../types';
 import { formatCurrency } from './format';
 
 const SAIDA_KEYWORDS = ['saida', 'saída', 'despesa', 'gasto', 'outflow'];

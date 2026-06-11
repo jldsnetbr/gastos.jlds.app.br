@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useSpreadsheetData } from '../useSpreadsheetData';
-import { Column, Row } from '../../types';
+import type { Column, Row } from '../../types';
 import * as dataAccess from '../../lib/dataAccess';
 
 vi.mock('../../lib/dataAccess', () => ({

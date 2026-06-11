@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Column, Row } from '../types';
+import type { Column, Row } from '../types';
 import {
   loadColumns as loadRemoteColumns,
   saveColumns as saveRemoteColumns,
@@ -8,7 +8,7 @@ import {
   ensureMonthTable,
 } from '../lib/dataAccess';
 import { debounce } from '../utils/debounce';
-import { subscribeToMonth, RealtimeEventType } from './useRealtime';
+import { subscribeToMonth, type RealtimeEventType } from './useRealtime';
 
 const DEFAULT_COLUMNS: Column[] = [
   { id: 'date', name: 'Data', type: 'date' },
@@ -56,7 +56,6 @@ export function useSpreadsheetData(
   const debouncedSave = useMemo(
     () => debounce(async (uid: string, m: string, cols: Column[], r: Row[]) => {
       try {
-        skipNextColumnsRef.current = true;
         await saveRemoteColumns(uid, cols);
         await saveRemoteMonthRows(uid, m, r);
         setSyncStatus('saved');
@@ -76,6 +75,7 @@ export function useSpreadsheetData(
   const updateRemote = useCallback(
     (newCols: Column[], newRows: Row[]) => {
       if (!userId) return;
+      skipNextColumnsRef.current = true;
       setSyncStatus('saving');
       debouncedSave(userId, month, newCols, newRows);
     },
@@ -84,7 +84,6 @@ export function useSpreadsheetData(
 
   useEffect(() => {
     if (!userId) {
-      setDataLoaded(false);
       return;
     }
 

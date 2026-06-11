@@ -1,6 +1,6 @@
 import { motion, useSpring, useTransform, useMotionValue } from 'motion/react';
 import { useEffect, useRef } from 'react';
-import { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
 import type { Theme } from '../utils/storage';
 import { mp } from '../utils/theme';
@@ -85,7 +85,7 @@ const variantStyles: Record<string, VariantStyle> = {
 
 function AnimatedValue({ value, className }: { value: number; className: string }) {
   const prevValue = useRef(value);
-  const motionValue = useMotionValue(prevValue.current);
+  const motionValue = useMotionValue(value);
   const spring = useSpring(motionValue, { stiffness: 120, damping: 18, mass: 0.4 });
   const display = useTransform(spring, (v) => formatCurrency(v));
 

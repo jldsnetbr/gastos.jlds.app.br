@@ -21,3 +21,10 @@ export interface HistoryState {
   columns: Column[];
   rows: Row[];
 }
+
+export interface DynamicRow {
+  row_id: string;
+  user_id: string;
+  data: Record<string, string | number | null>;
+  created_at: string;
+}

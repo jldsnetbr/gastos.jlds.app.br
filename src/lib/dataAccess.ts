@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { Column, ColumnType, Row } from '../types';
+import type { Column, ColumnType, Row } from '../types';
 import { getMonthTableName } from './tableNames';
 
 const VALID_COLUMN_TYPES = new Set<string>(['text', 'number', 'select', 'date']);
