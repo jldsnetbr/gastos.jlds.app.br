@@ -489,6 +489,18 @@ export default function Spreadsheet({
                           if (e.key === 'Enter' && !isEditing) {
                             e.preventDefault();
                             handleStartEditing(row.id, col.id, String(value));
+                          } else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                            e.preventDefault();
+                            const colIdx = columns.findIndex((c) => c.id === col.id);
+                            const rowIdx = sortedRows.findIndex((r) => r.id === row.id);
+                            let targetRow = rowIdx;
+                            let targetCol = colIdx;
+                            if (e.key === 'ArrowUp' && rowIdx > 0) targetRow = rowIdx - 1;
+                            if (e.key === 'ArrowDown' && rowIdx < sortedRows.length - 1) targetRow = rowIdx + 1;
+                            if (e.key === 'ArrowLeft' && colIdx > 0) targetCol = colIdx - 1;
+                            if (e.key === 'ArrowRight' && colIdx < columns.length - 1) targetCol = colIdx + 1;
+                            const targetId = `cell-${sortedRows[targetRow].id}-${columns[targetCol].id}`;
+                            document.getElementById(targetId)?.focus();
                           }
                         }}
                         onClick={() => { if (!isEditing) handleStartEditing(row.id, col.id, String(value)); }}
