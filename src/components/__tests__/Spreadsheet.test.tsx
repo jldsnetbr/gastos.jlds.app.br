@@ -178,6 +178,7 @@ describe('Spreadsheet', () => {
     ).toBeGreaterThanOrEqual(1);
     expect(
       screen.getAllByText((_content, element) => {
+        if (!element) return false;
         const text = element.textContent ?? '';
         return text.includes('Exibindo') && text.includes('registros') && text.includes('3');
       }).length
