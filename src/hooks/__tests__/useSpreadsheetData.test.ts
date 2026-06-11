@@ -12,6 +12,10 @@ vi.mock('../../lib/dataAccess', () => ({
   ensureMonthTable: vi.fn(),
 }));
 
+vi.mock('../useRealtime', () => ({
+  subscribeToMonth: vi.fn(() => () => {}),
+}));
+
 vi.mock('../../utils/debounce', () => ({
   debounce: vi.fn((fn: (...args: unknown[]) => unknown) => {
     const d = (...args: unknown[]) => fn(...args);

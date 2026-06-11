@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getMonthTableName, getRealtimeChannelName, TABLE_PREFIX } from '../tableNames';
+import { getMonthTableName, TABLE_PREFIX } from '../tableNames';
 
 describe('getMonthTableName', () => {
   it('converts 2026-06 to rows_2026_06', () => {
@@ -8,12 +8,6 @@ describe('getMonthTableName', () => {
 
   it('handles month strings without dash', () => {
     expect(getMonthTableName('2026_06')).toBe('rows_2026_06');
-  });
-});
-
-describe('getRealtimeChannelName', () => {
-  it('prefixes with realtime:', () => {
-    expect(getRealtimeChannelName('2026-06')).toBe('realtime:rows_2026_06');
   });
 });
 

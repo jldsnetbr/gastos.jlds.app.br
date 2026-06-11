@@ -8,6 +8,7 @@ import {
   ensureMonthTable,
 } from '../lib/dataAccess';
 import { debounce } from '../utils/debounce';
+import { subscribeToMonth, RealtimeEventType } from './useRealtime';
 
 export type SyncStatus = 'idle' | 'saving' | 'saved' | 'offline';
 
@@ -22,7 +23,6 @@ interface UseSpreadsheetDataReturn {
 }
 
 const SAVE_DEBOUNCE_MS = 500;
-const REFRESH_INTERVAL_MS = 30_000;
 
 export function useSpreadsheetData(
   userId: string | undefined,
@@ -39,7 +39,7 @@ export function useSpreadsheetData(
       const remoteRows = await loadRemoteMonthRows(uid, m);
       setRows(remoteRows ?? []);
     } catch {
-      // silencioso: estado anterior preservado
+      /* silencioso: estado anterior preservado */
     }
   }, []);
 
@@ -94,25 +94,36 @@ export function useSpreadsheetData(
     init();
   }, [userId, month, fetchAndSet]);
 
-  // Auto-refresh: quando muda mês OU a cada 30s OU janela volta a ter foco
   useEffect(() => {
     if (!dataLoaded || !userId) return;
 
     monthRef.current = month;
-    ensureMonthTable(month).then(() => fetchAndSet(userId, month)).catch(() => {});
 
-    const interval = setInterval(() => {
-      fetchAndSet(userId, monthRef.current);
-    }, REFRESH_INTERVAL_MS);
+    const handleRowEvent = (type: RealtimeEventType, row: Row) => {
+      setRows((prev) => {
+        if (type === 'INSERT') {
+          if (prev.some((r) => r.id === row.id)) return prev;
+          return [...prev, row];
+        }
+        if (type === 'UPDATE') {
+          return prev.map((r) => (r.id === row.id ? row : r));
+        }
+        if (type === 'DELETE') {
+          return prev.filter((r) => r.id !== row.id);
+        }
+        return prev;
+      });
+    };
 
-    const onFocus = () => fetchAndSet(userId, monthRef.current);
-    window.addEventListener('focus', onFocus);
+    const unsubscribe = subscribeToMonth(userId, month, {
+      onRowEvent: handleRowEvent,
+      onColumnsChange: setColumns,
+    });
 
     return () => {
-      clearInterval(interval);
-      window.removeEventListener('focus', onFocus);
+      unsubscribe();
     };
-  }, [month, dataLoaded, userId, fetchAndSet]);
+  }, [month, dataLoaded, userId]);
 
   const refresh = useCallback(async () => {
     if (userId) await fetchAndSet(userId, month);

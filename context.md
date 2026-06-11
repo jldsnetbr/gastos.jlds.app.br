@@ -23,10 +23,8 @@ A aplicação é modularizada e estruturada da seguinte forma:
 │   │   └── Spreadsheet.tsx         # Tabela de Planilha estilo Excel interativa
 │   ├── hooks
 │   │   ├── useRealtime.ts          # Subscription Supabase Realtime por mês
-│   │   ├── useDateCoercion.ts      # Coerção estrita de datas ao mês selecionado
-│   │   ├── useMutationLock.ts      # Lock de mutações concorrentes
-│   │   ├── useCellFormatter.ts     # Formatação de células com cache
-│   │   └── useSpreadsheetData.ts   # Gerenciamento de dados com debounce + fallback
+│   │   ├── useSpreadsheetData.ts   # Gerenciamento de dados com debounce + realtime
+│   │   └── useDateCoercion.ts      # Coerção estrita de datas ao mês selecionado
 │   ├── utils
 │   │   ├── financeHelper.ts        # Cálculo matemático purificado dos resumos
 │   │   ├── csv.ts                  # Import/export CSV com crypto.randomUUID
