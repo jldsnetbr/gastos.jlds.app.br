@@ -589,7 +589,7 @@ export default function Spreadsheet({
         <table id="excel-spreadsheet-table" className="w-full text-left border-collapse table-fixed select-text">
           <thead className="sticky top-0 z-20">
             <tr>
-              <th id="hdr-row-index" className="sticky-col-first w-12 bg-slate-50/80 dark:bg-[#1A1E28]/90 backdrop-blur-sm text-center text-xs font-medium text-slate-400 dark:text-slate-500 border-r border-slate-200/50 dark:border-slate-700/50 py-3.5 px-0 select-none">#</th>
+              <th id="hdr-row-index" style={{ backgroundColor: mp(theme, 'surface2') }} className="sticky-col-first w-12 bg-slate-50/80 dark:bg-[#1A1E28]/90 backdrop-blur-sm text-center text-xs font-medium text-slate-400 dark:text-slate-500 border-r border-slate-200/50 dark:border-slate-700/50 py-3.5 px-0 select-none">#</th>
               {columns.map((col) => {
                 const isActive = sortColId === col.id;
                 const isFocused = focusedCell?.colId === col.id;
@@ -597,6 +597,7 @@ export default function Spreadsheet({
                   <th
                     id={`hdr-col-${col.id}`}
                     key={col.id}
+                    style={{ backgroundColor: mp(theme, 'surface2') }}
                     className={`relative group min-w-[150px] border-r border-slate-200/50 dark:border-slate-700/50 px-4 py-3.5 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-slate-50/80 dark:bg-[#1A1E28]/90 backdrop-blur-sm transition ${isFocused ? 'col-highlight' : ''}`}
                   >
                     <div className="flex items-center justify-between gap-1 overflow-hidden">
@@ -632,13 +633,13 @@ export default function Spreadsheet({
                   </th>
                 );
               })}
-              <th id="hdr-actions" className="sticky-col-actions w-[72px] text-center text-xs font-semibold text-slate-400 dark:text-slate-500 bg-slate-50/80 dark:bg-[#1A1E28]/90 backdrop-blur-sm px-2 py-3.5 select-none">Ações</th>
+              <th id="hdr-actions" style={{ backgroundColor: mp(theme, 'surface2') }} className="sticky-col-actions w-[72px] text-center text-xs font-semibold text-slate-400 dark:text-slate-500 bg-slate-50/80 dark:bg-[#1A1E28]/90 backdrop-blur-sm px-2 py-3.5 select-none">Ações</th>
             </tr>
           </thead>
           <tbody>
             {sortedRows.length === 0 ? (
               <tr id="empty-row-fallback">
-                <td colSpan={columns.length + 2} className="text-center py-[60px] text-slate-400 dark:text-slate-500 bg-white dark:bg-[#161920] border-b border-slate-200/50 dark:border-slate-700/40">
+                <td colSpan={columns.length + 2} style={{ backgroundColor: mp(theme, 'surface') }} className="text-center py-[60px] text-slate-400 dark:text-slate-500 bg-white dark:bg-[#161920] border-b border-slate-200/50 dark:border-slate-700/40">
                   <div className="flex flex-col items-center gap-3">
                     <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-[#1E222A] flex items-center justify-center">
                       <FileSpreadsheet className="w-6 h-6 text-slate-300 dark:text-slate-600" />
@@ -686,13 +687,16 @@ export default function Spreadsheet({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.25 }}
+                      style={{
+                        backgroundColor: rowIndex % 2 === 0 ? mp(theme, 'surface') : mp(theme, 'surface3'),
+                      }}
                       className={`transition-colors duration-100 group border-b border-slate-100/50 dark:border-slate-700/30 ${tipoIndicator} ${
                         rowIndex % 2 === 0
                           ? 'bg-white dark:bg-[#161920]'
                           : 'bg-slate-50/30 dark:bg-[#181C25]/40'
                       } hover:bg-slate-100/40 dark:hover:bg-[#1E222A]/60 ${isRowFocused ? 'row-highlight' : ''}`}
                     >
-                      <td id={`cell-idx-${row.id}`} className="sticky-col-first text-center text-xs font-mono text-slate-400 dark:text-slate-500 border-r border-slate-200/30 dark:border-slate-700/30 py-3 bg-slate-50/20 dark:bg-[#0F1115]/20 select-none">
+                      <td id={`cell-idx-${row.id}`} style={{ backgroundColor: mp(theme, 'bg') }} className="sticky-col-first text-center text-xs font-mono text-slate-400 dark:text-slate-500 border-r border-slate-200/30 dark:border-slate-700/30 py-3 bg-slate-50/20 dark:bg-[#0F1115]/20 select-none">
                         {rowIndex + 1}
                       </td>
                       {columns.map((col) => {
