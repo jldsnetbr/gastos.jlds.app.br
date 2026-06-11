@@ -1,5 +1,3 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Check } from 'lucide-react';
 import { Column, Row } from '../types';
 
 interface SelectEditorProps {
@@ -15,6 +13,12 @@ interface SelectEditorProps {
   onClose: () => void;
 }
 
+const OPTION_STYLES: Record<string, string> = {
+  'Entrada': 'bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
+  'Saída': 'bg-rose-100 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-500/30',
+};
+const DEFAULT_STYLE = 'bg-slate-100 dark:bg-[#1E222A] text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600';
+
 export default function SelectEditor({
   options,
   value,
@@ -28,26 +32,12 @@ export default function SelectEditor({
   onClose,
 }: SelectEditorProps) {
   const currentIdx = Math.max(0, options.indexOf(value));
-  const [selectedIndex, setSelectedIndex] = useState(currentIdx);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const selected = options[currentIdx] ?? options[0];
 
-  // Focus on mount
-  useEffect(() => {
-    containerRef.current?.focus();
-  }, []);
-
-  // Scroll selected option into view
-  useEffect(() => {
-    optionRefs.current[selectedIndex]?.scrollIntoView({ block: 'nearest' });
-  }, [selectedIndex]);
-
-  const confirmSelection = useCallback(() => {
-    const selected = options[selectedIndex] ?? options[0];
-    // Save
+  const saveAndNavigate = (newValue: string) => {
     const updatedRows = rows.map((r) =>
       r.id === rowId
-        ? { ...r, month: selectedMonth, data: { ...r.data, [colId]: selected } }
+        ? { ...r, month: selectedMonth, data: { ...r.data, [colId]: newValue } }
         : r
     );
     onDataChange(columns, updatedRows);
@@ -63,73 +53,67 @@ export default function SelectEditor({
         }, 30);
       }
     }
-  }, [selectedIndex, options, rows, rowId, colId, columns, selectedMonth, onDataChange, onClose, onStartEditing]);
+  };
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+  const cycleNext = () => {
+    const nextIdx = (currentIdx + 1) % options.length;
+    saveAndNavigate(options[nextIdx]);
+  };
+
+  const cyclePrev = () => {
+    const prevIdx = (currentIdx - 1 + options.length) % options.length;
+    saveAndNavigate(options[prevIdx]);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
       e.preventDefault();
-      setSelectedIndex((i) => (i + 1) % options.length);
+      cycleNext();
     } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
       e.preventDefault();
-      setSelectedIndex((i) => (i - 1 + options.length) % options.length);
+      cyclePrev();
     } else if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
       e.stopPropagation();
-      confirmSelection();
+      saveAndNavigate(selected);
     } else if (e.key === 'Escape') {
       e.preventDefault();
       onClose();
-    } else {
-      // Type first letter to jump to option
-      const letter = e.key.toLowerCase();
-      const idx = options.findIndex((o) => o.toLowerCase().startsWith(letter));
-      if (idx >= 0) setSelectedIndex(idx);
     }
-  }, [options, confirmSelection, onClose]);
+  };
+
+  const style = OPTION_STYLES[selected] ?? DEFAULT_STYLE;
 
   return (
     <div
-      ref={containerRef}
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      className="relative w-full outline-none"
+      className="w-full h-8 flex items-center justify-center gap-1 outline-none select-none"
     >
-      {/* Dropdown options */}
-      <div className="absolute left-0 top-full mt-0.5 z-30 bg-white dark:bg-[#1E222A] border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden min-w-[120px]">
-        {options.map((opt, i) => {
-          const isSelected = opt === value;
-          const isHighlighted = i === selectedIndex;
-          return (
-            <button
-              key={opt}
-              ref={(el) => { optionRefs.current[i] = el; }}
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                setSelectedIndex(i);
-                setTimeout(() => confirmSelection(), 10);
-              }}
-              onMouseEnter={() => setSelectedIndex(i)}
-              className={`w-full flex items-center justify-between gap-2 px-3 py-1.5 text-sm transition-colors ${
-                isHighlighted
-                  ? 'bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
-                  : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5'
-              }`}
-            >
-              <span>{opt}</span>
-              {isSelected && (
-                <Check className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 flex-shrink-0" />
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {/* Left arrow */}
+      <button
+        type="button"
+        tabIndex={-1}
+        onClick={(e) => { e.stopPropagation(); cyclePrev(); }}
+        className="w-5 h-5 flex items-center justify-center rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10 transition text-xs flex-shrink-0"
+      >
+        ‹
+      </button>
 
-      {/* Hint */}
-      <div className="flex items-center justify-between px-2 py-1 text-[10px] text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-[#161920]">
-        <span>↑↓ selecionar</span>
-        <span>Enter confirmar</span>
-      </div>
+      {/* Current option pill */}
+      <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border transition-all ${style}`}>
+        {selected}
+      </span>
+
+      {/* Right arrow */}
+      <button
+        type="button"
+        tabIndex={-1}
+        onClick={(e) => { e.stopPropagation(); cycleNext(); }}
+        className="w-5 h-5 flex items-center justify-center rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10 transition text-xs flex-shrink-0"
+      >
+        ›
+      </button>
     </div>
   );
 }
