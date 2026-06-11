@@ -723,9 +723,33 @@ export default function Spreadsheet({
                                 <select
                                   id={`edit-select-${row.id}-${col.id}`}
                                   value={editValue}
-                                  onChange={(e) => setEditValue(e.target.value)}
+                                  onChange={(e) => {
+                                    setEditValue(e.target.value);
+                                    // Auto-save and navigate to next column after selection
+                                    const nextColIdx = columns.findIndex((c) => c.id === col.id) + 1;
+                                    setTimeout(() => {
+                                      // Save with new value
+                                      const finalValue = e.target.value;
+                                      const updatedRows = rows.map((r) =>
+                                        r.id === row.id
+                                          ? { ...r, month: selectedMonth, data: { ...r.data, [col.id]: finalValue } }
+                                          : r
+                                      );
+                                      onDataChange(columns, updatedRows);
+                                      setEditingCell(null);
+                                      // Navigate to next column
+                                      if (nextColIdx < columns.length) {
+                                        const nextCol = columns[nextColIdx];
+                                        const row_ = rows.find((r) => r.id === row.id);
+                                        if (row_) {
+                                          handleStartEditing(row.id, nextCol.id, String(row_.data[nextCol.id] ?? ''));
+                                        }
+                                      }
+                                    }, 50);
+                                  }}
                                   onBlur={() => handleSaveCell(row.id, col.id)}
                                   onKeyDown={(e) => handleKeyDown(e, row.id, col.id)}
+                                  autoFocus
                                   className="w-full h-8 text-sm border-0 focus:ring-0 px-2 py-0.5 rounded bg-white dark:bg-[#161920] text-slate-900 dark:text-white"
                                 >
                                   {(col.options || ['Entrada', 'Saída']).map((opt) => (
