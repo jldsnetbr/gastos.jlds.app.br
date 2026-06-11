@@ -7,18 +7,14 @@ export function useTheme() {
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove('dark', 'midnight');
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else if (theme === 'midnight') {
+    if (theme === 'midnight') {
       root.classList.add('dark', 'midnight');
     }
     persistTheme(theme);
   }, [theme]);
 
   const cycleTheme = useCallback(() => {
-    setThemeState((prev) =>
-      prev === 'light' ? 'dark' : prev === 'dark' ? 'midnight' : 'light'
-    );
+    setThemeState((prev) => (prev === 'light' ? 'midnight' : 'light'));
   }, []);
 
   return { theme, cycleTheme };

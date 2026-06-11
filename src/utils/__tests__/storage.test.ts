@@ -10,11 +10,6 @@ describe('getTheme', () => {
     expect(getTheme()).toBe('light');
   });
 
-  it('returns dark when stored', () => {
-    localStorage.setItem('theme', 'dark');
-    expect(getTheme()).toBe('dark');
-  });
-
   it('returns midnight when stored', () => {
     localStorage.setItem('theme', 'midnight');
     expect(getTheme()).toBe('midnight');
@@ -24,6 +19,11 @@ describe('getTheme', () => {
     localStorage.setItem('theme', 'invalid');
     expect(getTheme()).toBe('light');
   });
+
+  it('returns light for legacy dark value', () => {
+    localStorage.setItem('theme', 'dark');
+    expect(getTheme()).toBe('light');
+  });
 });
 
 describe('setTheme', () => {
@@ -31,18 +31,18 @@ describe('setTheme', () => {
     localStorage.clear();
   });
 
-  it('stores theme in localStorage', () => {
-    setTheme('dark');
-    expect(localStorage.getItem('theme')).toBe('dark');
-  });
-
   it('stores midnight theme', () => {
     setTheme('midnight');
     expect(localStorage.getItem('theme')).toBe('midnight');
   });
 
+  it('stores light theme', () => {
+    setTheme('light');
+    expect(localStorage.getItem('theme')).toBe('light');
+  });
+
   it('overwrites previous theme', () => {
-    setTheme('dark');
+    setTheme('midnight');
     setTheme('light');
     expect(localStorage.getItem('theme')).toBe('light');
   });

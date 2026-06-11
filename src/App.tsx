@@ -47,11 +47,9 @@ export default function App() {
 
   const themeIcon = theme === 'light'
     ? <Moon className="w-[18px] h-[18px]" />
-    : theme === 'dark'
-      ? <Sun className="w-[18px] h-[18px] text-amber-400" />
-      : <span className="text-[14px] leading-none">🟣</span>;
+    : <Sun className="w-[18px] h-[18px] text-amber-400" />;
 
-  const themeLabel = theme === 'light' ? 'Dark' : theme === 'dark' ? 'Midnight' : 'Light';
+  const themeLabel = theme === 'light' ? 'Midnight' : 'Light';
 
   const handlePrevMonth = () => setSelectedMonth(navigateMonth(selectedMonth, 'prev'));
   const handleNextMonth = () => setSelectedMonth(navigateMonth(selectedMonth, 'next'));
