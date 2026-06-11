@@ -35,6 +35,8 @@ export default function Spreadsheet({
   const [showAddColumnModal, setShowAddColumnModal] = useState(false);
   const [showDeleteColumnModal, setShowDeleteColumnModal] = useState(false);
   const [toast, setToast] = useState<ToastData | null>(null);
+  const [sortColId, setSortColId] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   const editInputRef = useRef<HTMLInputElement>(null);
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -330,6 +332,42 @@ export default function Spreadsheet({
     );
   }, [filteredRowsByMonth, columns, searchQuery]);
 
+  const handleSort = useCallback((colId: string) => {
+    setSortColId((prev) => {
+      if (prev === colId) {
+        setSortDir((d) => d === 'asc' ? 'desc' : 'asc');
+        return colId;
+      }
+      setSortDir('asc');
+      return colId;
+    });
+  }, []);
+
+  const sortedRows: Row[] = useMemo(() => {
+    if (!sortColId) return filteredRows;
+    const col = columns.find((c) => c.id === sortColId);
+    if (!col) return filteredRows;
+
+    const sorted = [...filteredRows];
+    sorted.sort((a, b) => {
+      const aVal = a.data[sortColId] ?? '';
+      const bVal = b.data[sortColId] ?? '';
+
+      let cmp = 0;
+      if (col.type === 'number') {
+        const aNum = typeof aVal === 'number' ? aVal : parseFloat(String(aVal)) || 0;
+        const bNum = typeof bVal === 'number' ? bVal : parseFloat(String(bVal)) || 0;
+        cmp = aNum - bNum;
+      } else if (col.type === 'date') {
+        cmp = String(aVal).localeCompare(String(bVal));
+      } else {
+        cmp = String(aVal).toLowerCase().localeCompare(String(bVal).toLowerCase());
+      }
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+    return sorted;
+  }, [filteredRows, columns, sortColId, sortDir]);
+
   const activeCol = activeHeaderSettings ? columns.find((c) => c.id === activeHeaderSettings) ?? null : null;
   const activeColIndex = activeHeaderSettings ? columns.findIndex((c) => c.id === activeHeaderSettings) : -1;
 
@@ -345,7 +383,7 @@ export default function Spreadsheet({
         onImportCSV={handleImportCSV}
         onOpenAddColumn={() => setShowAddColumnModal(true)}
         onOpenDeleteColumn={() => setShowDeleteColumnModal(true)}
-        filteredCount={filteredRows.length}
+        filteredCount={sortedRows.length}
         totalCount={filteredRowsByMonth.length}
       />
 
@@ -355,37 +393,52 @@ export default function Spreadsheet({
           <thead className="sticky top-0 z-20">
             <tr>
               <th id="hdr-row-index" className="w-12 bg-slate-50/80 dark:bg-[#1A1E28]/90 backdrop-blur-sm text-center text-xs font-medium text-slate-400 dark:text-slate-500 border-r border-slate-200/50 dark:border-slate-700/50 py-3.5 px-0 select-none">#</th>
-              {columns.map((col) => (
-                <th
-                  id={`hdr-col-${col.id}`}
-                  key={col.id}
-                  className="relative group min-w-[150px] border-r border-slate-200/50 dark:border-slate-700/50 px-4 py-3.5 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-slate-50/80 dark:bg-[#1A1E28]/90 backdrop-blur-sm transition"
-                >
-                  <div className="flex items-center justify-between gap-1 overflow-hidden">
-                    <input
-                      id={`colname-input-${col.id}`}
-                      type="text"
-                      value={col.name}
-                      title="Clique para renomear"
-                      onChange={(e) => handleRenameColumn(col.id, e.target.value)}
-                      className="w-full bg-transparent font-semibold border-none hover:bg-slate-200/40 dark:hover:bg-white/5 focus:bg-white dark:focus:bg-[#1E222A] focus:ring-1 focus:ring-indigo-400/40 p-0.5 rounded text-sm text-ellipsis overflow-hidden focus:outline-none"
-                    />
-                    <button
-                      id={`col-settings-btn-${col.id}`}
-                      onClick={() => setActiveHeaderSettings(activeHeaderSettings === col.id ? null : col.id)}
-                      className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-[#1E222A] transition-all duration-150"
-                      aria-label="Configurações da coluna"
-                    >
-                      <svg className="w-[15px] h-[15px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></svg>
-                    </button>
-                  </div>
-                </th>
-              ))}
+              {columns.map((col) => {
+                const isActive = sortColId === col.id;
+                return (
+                  <th
+                    id={`hdr-col-${col.id}`}
+                    key={col.id}
+                    className="relative group min-w-[150px] border-r border-slate-200/50 dark:border-slate-700/50 px-4 py-3.5 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-slate-50/80 dark:bg-[#1A1E28]/90 backdrop-blur-sm transition"
+                  >
+                    <div className="flex items-center justify-between gap-1 overflow-hidden">
+                      <input
+                        id={`colname-input-${col.id}`}
+                        type="text"
+                        value={col.name}
+                        title="Clique para renomear"
+                        onChange={(e) => handleRenameColumn(col.id, e.target.value)}
+                        className={`w-full bg-transparent font-semibold border-none hover:bg-slate-200/40 dark:hover:bg-white/5 focus:bg-white dark:focus:bg-[#1E222A] focus:ring-1 focus:ring-indigo-400/40 p-0.5 rounded text-sm text-ellipsis overflow-hidden focus:outline-none ${isActive ? 'text-indigo-600 dark:text-indigo-400' : ''}`}
+                      />
+                      <button
+                        id={`col-sort-btn-${col.id}`}
+                        type="button"
+                        onClick={() => handleSort(col.id)}
+                        title={isActive ? (sortDir === 'asc' ? 'Crescente — clique para decrescente' : 'Decrescente — clique para crescente') : 'Clique para ordenar'}
+                        className={`flex-shrink-0 p-1 rounded-md transition-all duration-150 ${isActive ? 'text-indigo-600 dark:text-indigo-400 opacity-100' : 'opacity-0 group-hover:opacity-100 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-[#1E222A]'}`}
+                        aria-label={`Ordenar por ${col.name}`}
+                      >
+                        <svg className={`w-3.5 h-3.5 transition-transform ${isActive && sortDir === 'desc' ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 5v14M5 12l7-7 7 7" />
+                        </svg>
+                      </button>
+                      <button
+                        id={`col-settings-btn-${col.id}`}
+                        onClick={() => setActiveHeaderSettings(activeHeaderSettings === col.id ? null : col.id)}
+                        className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-[#1E222A] transition-all duration-150"
+                        aria-label="Configurações da coluna"
+                      >
+                        <svg className="w-[15px] h-[15px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></svg>
+                      </button>
+                    </div>
+                  </th>
+                );
+              })}
               <th id="hdr-actions" className="w-[72px] text-center text-xs font-semibold text-slate-400 dark:text-slate-500 bg-slate-50/80 dark:bg-[#1A1E28]/90 backdrop-blur-sm px-2 py-3.5 select-none">Ações</th>
             </tr>
           </thead>
           <tbody>
-            {filteredRows.length === 0 ? (
+            {sortedRows.length === 0 ? (
               <tr id="empty-row-fallback">
                 <td colSpan={columns.length + 2} className="text-center py-[60px] text-slate-400 dark:text-slate-500 bg-white dark:bg-[#161920] border-b border-slate-200/50 dark:border-slate-700/40">
                   <div className="flex flex-col items-center gap-3">
@@ -407,7 +460,7 @@ export default function Spreadsheet({
                 </td>
               </tr>
             ) : (
-              filteredRows.map((row, rowIndex) => (
+              sortedRows.map((row, rowIndex) => (
                 <tr
                   id={`spreadsheet-row-${row.id}`}
                   key={row.id}
@@ -499,7 +552,7 @@ export default function Spreadsheet({
       </div>
 
       <SpreadsheetFooter
-        filteredCount={filteredRows.length}
+        filteredCount={sortedRows.length}
         totalCount={filteredRowsByMonth.length}
       />
 
