@@ -11,24 +11,11 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const LOCAL_MODE = import.meta.env.VITE_LOCAL_MODE === 'true';
-
-const LOCAL_USER = {
-  id: 'local-dev-user',
-  email: 'dev@local.mode',
-  app_metadata: {},
-  user_metadata: {},
-  aud: 'authenticated',
-  created_at: new Date().toISOString(),
-} as User;
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(LOCAL_MODE ? LOCAL_USER : null);
-  const [loading, setLoading] = useState(!LOCAL_MODE);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (LOCAL_MODE) return; // Skip Supabase entirely
-
     supabase.auth.getSession().then((res) => {
       setUser(res.data.session?.user ?? null);
     }).catch(() => {
