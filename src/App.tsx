@@ -91,26 +91,6 @@ export default function App() {
     [selectedMonth, history, currentIndex, setColumns, setRows]
   );
 
-  const handleUndo = useCallback(() => {
-    if (currentIndex > 0) {
-      const prevIndex = currentIndex - 1;
-      const prevState = history[prevIndex];
-      setColumns(prevState.columns);
-      setRows(prevState.rows);
-      setCurrentIndex(prevIndex);
-    }
-  }, [currentIndex, history, setColumns, setRows]);
-
-  const handleRedo = useCallback(() => {
-    if (currentIndex < history.length - 1) {
-      const nextIndex = currentIndex + 1;
-      const nextState = history[nextIndex];
-      setColumns(nextState.columns);
-      setRows(nextState.rows);
-      setCurrentIndex(nextIndex);
-    }
-  }, [currentIndex, history, setColumns, setRows]);
-
   const dateColId = useMemo(() => columns.find((c) => c.type === 'date')?.id, [columns]);
   const { entradas, saidas, saldo } = useMemo(() => {
     const filteredMonthRows = rows.filter((row) => {
@@ -245,10 +225,6 @@ export default function App() {
                 rows={rows}
                 selectedMonth={selectedMonth}
                 onDataChange={updateData}
-                onUndo={handleUndo}
-                onRedo={handleRedo}
-                canUndo={currentIndex > 0}
-                canRedo={currentIndex < history.length - 1}
               />
             </Suspense>
           ) : (
