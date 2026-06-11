@@ -9,3 +9,7 @@ test-results/
 .env*
 !.env.example
 supabase/.temp/
+
+# Local dev mode (não commitar)
+.env.local
+src/lib/localDataAccess.ts
