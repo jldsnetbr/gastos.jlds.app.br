@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, memo } from 'react';
 import { Column, Row } from '../types';
 import { formatNumberCell, formatSelectCell, formatTextCell } from '../utils/cellFormat';
 
@@ -15,7 +15,7 @@ const SELECT_COLORS = {
   slate: 'bg-slate-100 dark:bg-[#1E222A] text-slate-800 dark:text-slate-300',
 } as const;
 
-export default function CellRenderer({ column, value, row, columns }: CellRendererProps): ReactNode {
+function CellRenderer({ column, value, row, columns }: CellRendererProps): ReactNode {
   if (column.type === 'number') {
     const { text, color } = formatNumberCell(value, row, columns);
     const colorClass = color === 'rose'
@@ -40,3 +40,5 @@ export default function CellRenderer({ column, value, row, columns }: CellRender
   }
   return <>{text}</>;
 }
+
+export default memo(CellRenderer);

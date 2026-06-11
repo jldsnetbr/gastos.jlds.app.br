@@ -1,4 +1,5 @@
 import { Column, Row } from '../types';
+import { formatCurrency } from './format';
 
 const SAIDA_KEYWORDS = ['saida', 'saída', 'despesa', 'gasto', 'outflow'];
 const ENTRADA_KEYWORDS = ['entrada', 'receita', 'ganho', 'inflow'];
@@ -27,7 +28,7 @@ export function formatNumberCell(value: string | number, row: Row, columns: Colu
   const color: 'emerald' | 'rose' = isExpense ? 'rose' : num >= 0 ? 'emerald' : 'rose';
   const sign = num < 0 ? '-' : '';
   const abs = Math.abs(num);
-  const formatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(abs);
+  const formatted = formatCurrency(abs);
   return { text: `${sign}${formatted}`, color };
 }
 

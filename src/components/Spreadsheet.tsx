@@ -1,15 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import {
-  Plus,
   Trash2,
-  Search,
-  Download,
-  Upload,
-  X,
-  HelpCircle,
-  PlusCircle,
   FileSpreadsheet,
-  ChevronsLeft,
 } from 'lucide-react';
 import { Column, Row, ColumnType } from '../types';
 import Toast, { ToastData } from './Toast';
@@ -17,6 +9,8 @@ import AddColumnModal from './AddColumnModal';
 import DeleteColumnModal from './DeleteColumnModal';
 import ColumnSettingsMenu from './ColumnSettingsMenu';
 import CellRenderer from './CellRenderer';
+import SpreadsheetToolbar from './SpreadsheetToolbar';
+import SpreadsheetFooter from './SpreadsheetFooter';
 import { coerceDateInMonth } from '../utils/dateCoercion';
 import { parseCSV, toCSV, downloadCSV } from '../utils/csv';
 import { showToast as globalShowToast } from '../utils/toast';
@@ -105,6 +99,19 @@ export default function Spreadsheet({
       } else if (e.key === 'Escape') {
         e.preventDefault();
         setEditingCell(null);
+      } else if (e.key === 'Tab' && e.shiftKey) {
+        e.preventDefault();
+        handleSaveCell(rowId, colId);
+        const currentColIndex = columns.findIndex((c) => c.id === colId);
+        if (currentColIndex > 0) {
+          const prevCol = columns[currentColIndex - 1];
+          setTimeout(() => {
+            const row = rows.find((r) => r.id === rowId);
+            if (row) {
+              handleStartEditing(rowId, prevCol.id, String(row.data[prevCol.id] ?? ''));
+            }
+          }, 10);
+        }
       } else if (e.key === 'Tab') {
         e.preventDefault();
         handleSaveCell(rowId, colId);
@@ -328,93 +335,19 @@ export default function Spreadsheet({
 
   return (
     <div id="spreadsheet-container" className="bg-white dark:bg-[#161920] border border-slate-200 dark:border-slate-700/60 rounded-2xl shadow-sm dark:shadow-xl dark:shadow-black/10 overflow-hidden relative">
-      {/* Toolbar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between p-5 gap-4 border-b border-slate-200/60 dark:border-slate-700/40 bg-gradient-to-r from-white via-slate-50/80 to-white dark:from-[#161920] dark:via-[#1A1E28]/60 dark:to-[#161920]">
-        {/* Left toolbar group */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          {/* Centralizar planilha */}
-          <button
-            id="btn-center-spreadsheet"
-            onClick={handleCenterSpreadsheet}
-            title="Centralizar planilha"
-            className="p-2 rounded-md transition active:scale-90 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-[#252A34] bg-slate-100 dark:bg-[#1E222A]/80 border border-slate-200/40 dark:border-slate-700/40"
-          >
-            <ChevronsLeft className="w-[18px] h-[18px]" />
-          </button>
-
-          {/* Search bar */}
-          <div className="relative flex-1 min-w-[180px] max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-            <input
-              id="spreadsheet-search"
-              type="text"
-              placeholder="Buscar na planilha..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-9 py-2 text-sm bg-white dark:bg-[#1E222A]/80 border border-slate-200/60 dark:border-slate-700/60 rounded-lg text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 focus:border-indigo-400/60 transition-all font-sans"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Right toolbar group */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* CSV buttons */}
-          <div className="flex items-center gap-px bg-slate-100 dark:bg-[#1E222A]/80 rounded-lg border border-slate-200/40 dark:border-slate-700/40">
-            <label className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-[#252A34] rounded-l-lg cursor-pointer transition">
-              <Upload className="w-4 h-4 text-slate-400 dark:text-indigo-400/70" />
-              <span>CSV</span>
-              <input id="input-file-csv" type="file" accept=".csv" onChange={handleImportCSV} className="hidden" />
-            </label>
-            <div className="w-px h-5 bg-slate-200/50 dark:bg-slate-700/50" />
-            <button
-              id="btn-export-csv"
-              onClick={handleExportCSV}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-[#252A34] rounded-r-lg transition"
-            >
-              <Download className="w-4 h-4 text-slate-400 dark:text-indigo-400/70" />
-              <span>Excel</span>
-            </button>
-          </div>
-
-          {/* Nova Coluna */}
-          <button
-            id="btn-add-column-trigger"
-            onClick={() => setShowAddColumnModal(true)}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50/80 dark:bg-[#1E222A]/80 hover:bg-indigo-100 dark:hover:bg-[#252A34] border border-indigo-200/60 dark:border-indigo-500/20 rounded-lg transition active:scale-95 shadow-xs"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>Nova Coluna</span>
-          </button>
-
-          {/* Excluir Colunas */}
-          <button
-            id="btn-delete-column-trigger"
-            onClick={() => setShowDeleteColumnModal(true)}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-rose-600 dark:text-rose-400/80 bg-rose-50/50 dark:bg-[#1E222A]/80 hover:bg-rose-100/50 dark:hover:bg-rose-950/20 border border-rose-200/40 dark:border-rose-900/30 rounded-lg transition active:scale-95"
-          >
-            <Trash2 className="w-4 h-4" />
-            <span>Excluir</span>
-          </button>
-
-          {/* Adicionar Linha */}
-          <button
-            id="btn-add-row-quick"
-            onClick={handleAddRow}
-            className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-gradient-to-r from-slate-800 to-slate-700 dark:from-indigo-600 dark:to-indigo-500 hover:from-slate-700 hover:to-slate-600 dark:hover:from-indigo-500 dark:hover:to-indigo-400 rounded-lg transition-all duration-200 shadow-sm active:scale-95"
-          >
-            <Plus className="w-4.5 h-4.5" />
-            <span>Adicionar Linha</span>
-          </button>
-        </div>
-      </div>
+      <SpreadsheetToolbar
+        searchQuery={searchQuery}
+        onSearchChange={(value) => setSearchQuery(value)}
+        onClearSearch={() => setSearchQuery('')}
+        onCenterSpreadsheet={handleCenterSpreadsheet}
+        onAddRow={handleAddRow}
+        onExportCSV={handleExportCSV}
+        onImportCSV={handleImportCSV}
+        onOpenAddColumn={() => setShowAddColumnModal(true)}
+        onOpenDeleteColumn={() => setShowDeleteColumnModal(true)}
+        filteredCount={filteredRows.length}
+        totalCount={filteredRowsByMonth.length}
+      />
 
       {/* Spreadsheet table */}
       <div ref={tableContainerRef} className="overflow-x-auto w-full max-h-[60vh] overflow-y-auto">
@@ -496,7 +429,7 @@ export default function Spreadsheet({
                       <td
                         id={`cell-${row.id}-${col.id}`}
                         key={col.id}
-                        role="button"
+                        role="gridcell"
                         tabIndex={0}
                         aria-label={`${col.name}: ${String(value)}`}
                         onKeyDown={(e) => {
@@ -565,20 +498,10 @@ export default function Spreadsheet({
         </table>
       </div>
 
-      {/* Footer */}
-      <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 bg-gradient-to-r from-slate-50/40 to-white/40 dark:from-[#1A1E28]/30 dark:to-[#161920]/30 border-t border-slate-200/50 dark:border-slate-700/40 text-xs text-slate-400 dark:text-slate-500 gap-2">
-        <div className="flex items-center gap-2">
-          <HelpCircle className="w-[14px] h-[14px] text-slate-300 dark:text-slate-600" />
-          <span>Clique em qualquer célula para editá-la</span>
-        </div>
-        <div className="font-mono tracking-tight">
-          <span className="text-slate-500 dark:text-slate-500">Exibindo </span>
-          <span className="font-semibold text-slate-700 dark:text-slate-300">{filteredRows.length}</span>
-          <span className="text-slate-500 dark:text-slate-500"> de </span>
-          <span className="font-semibold text-slate-700 dark:text-slate-300">{filteredRowsByMonth.length}</span>
-          <span className="text-slate-500 dark:text-slate-500"> registros</span>
-        </div>
-      </div>
+      <SpreadsheetFooter
+        filteredCount={filteredRows.length}
+        totalCount={filteredRowsByMonth.length}
+      />
 
       {/* Modals & Toast */}
       <AddColumnModal

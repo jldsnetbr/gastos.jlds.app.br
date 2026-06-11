@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { getMonthTableName } from '../lib/tableNames';
-import { Column, Row } from '../types';
+import { Column, ColumnType, Row } from '../types';
 
 export type RealtimeEventType = 'INSERT' | 'UPDATE' | 'DELETE';
 
@@ -16,18 +16,21 @@ export function subscribeToMonth(
 ): () => void {
   const tableName = getMonthTableName(month);
 
-  const channel = supabase.channel(tableName);
+  const channel = supabase.channel(`${tableName}:${userId}`);
+
+  function makeRow(payload: Record<string, unknown>): Row {
+    return {
+      id: (payload?.row_id ?? payload?.id) as string,
+      month,
+      data: (payload?.data ?? {}) as Row['data'],
+    };
+  }
 
   channel.on(
     'postgres_changes',
     { event: 'INSERT', schema: 'public', table: tableName, filter: `user_id=eq.${userId}` },
     (payload) => {
-      const newRow: Row = {
-        id: payload.new.row_id as string,
-        month,
-        data: payload.new.data as Row['data'],
-      };
-      callbacks.onRowEvent('INSERT', newRow);
+      callbacks.onRowEvent('INSERT', makeRow(payload.new as Record<string, unknown>));
     }
   );
 
@@ -35,12 +38,7 @@ export function subscribeToMonth(
     'postgres_changes',
     { event: 'UPDATE', schema: 'public', table: tableName, filter: `user_id=eq.${userId}` },
     (payload) => {
-      const updatedRow: Row = {
-        id: payload.new.row_id as string,
-        month,
-        data: payload.new.data as Row['data'],
-      };
-      callbacks.onRowEvent('UPDATE', updatedRow);
+      callbacks.onRowEvent('UPDATE', makeRow(payload.new as Record<string, unknown>));
     }
   );
 
@@ -48,12 +46,7 @@ export function subscribeToMonth(
     'postgres_changes',
     { event: 'DELETE', schema: 'public', table: tableName, filter: `user_id=eq.${userId}` },
     (payload) => {
-      const deletedRow: Row = {
-        id: payload.old.row_id as string,
-        month,
-        data: {},
-      };
-      callbacks.onRowEvent('DELETE', deletedRow);
+      callbacks.onRowEvent('DELETE', makeRow(payload.old as Record<string, unknown>));
     }
   );
 
@@ -68,10 +61,10 @@ export function subscribeToMonth(
         .order('sort_order');
       if (data) {
         const columns: Column[] = data.map((r) => ({
-          id: r.column_id as string,
-          name: r.name as string,
-          type: r.type as Column['type'],
-          options: r.options as string[] | undefined,
+          id: r.column_id,
+          name: r.name,
+          type: r.type as ColumnType,
+          options: Array.isArray(r.options) ? (r.options as string[]) : undefined,
         }));
         callbacks.onColumnsChange(columns);
       }

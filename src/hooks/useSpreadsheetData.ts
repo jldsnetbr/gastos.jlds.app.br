@@ -38,7 +38,8 @@ export function useSpreadsheetData(
     try {
       const remoteRows = await loadRemoteMonthRows(uid, m);
       setRows(remoteRows ?? []);
-    } catch {
+    } catch (err) {
+      console.warn('fetchRows failed:', err);
       /* silencioso: estado anterior preservado */
     }
   }, []);
@@ -50,7 +51,8 @@ export function useSpreadsheetData(
         await saveRemoteMonthRows(uid, m, r);
         setSyncStatus('saved');
         setTimeout(() => setSyncStatus('idle'), 2000);
-      } catch {
+      } catch (err) {
+        console.warn('save failed:', err);
         setSyncStatus('offline');
       }
     }, SAVE_DEBOUNCE_MS),
@@ -83,7 +85,8 @@ export function useSpreadsheetData(
 
         await ensureMonthTable(month);
         await fetchAndSet(userId, month);
-      } catch {
+      } catch (err) {
+        console.warn('init failed:', err);
         setColumns([]);
         setRows([]);
       } finally {

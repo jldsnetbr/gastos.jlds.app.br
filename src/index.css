@@ -68,3 +68,13 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.dark * {
+  scrollbar-color: #334155 transparent;
+}

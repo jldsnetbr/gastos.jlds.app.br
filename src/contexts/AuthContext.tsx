@@ -39,12 +39,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    supabase.removeAllChannels();
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithOtp, signOut }}>
+    <AuthContext value={{ user, loading, signInWithOtp, signOut }}>
       {children}
-    </AuthContext.Provider>
+    </AuthContext>
   );
 }
 
