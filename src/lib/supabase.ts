@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import type { Database } from '../database.types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -13,34 +14,56 @@ if (missingVars.length > 0) {
   );
 }
 
-export const supabase =
-  supabaseUrl && supabaseAnonKey
-    ? createClient(supabaseUrl, supabaseAnonKey)
-    : ({
-        from: () => ({
-          select: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
-          insert: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
-          upsert: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
-          delete: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
-          eq: () => ({
-            select: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
-            order: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
-            in: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
-            then: (cb: (value: unknown) => unknown) => Promise.resolve({ data: null, error: new Error('Supabase not configured') }).then(cb),
-          }),
-          in: () => ({ eq: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }) }),
-          order: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
-        }),
-        rpc: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
-        channel: () => ({
-          on: () => ({ subscribe: () => ({}) }),
-          unsubscribe: () => Promise.resolve(),
-        }),
-        removeChannel: () => Promise.resolve('ok'),
-        auth: {
-          getSession: () => Promise.resolve({ data: { session: null }, error: null }),
-          onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
-          signInWithOtp: () => Promise.resolve({ data: {}, error: null }),
-          signOut: () => Promise.resolve({ error: null }),
-        },
-      } as unknown as ReturnType<typeof createClient>);
+type TypedSupabase = ReturnType<typeof createClient<Database>>;
+
+function isSupabaseConfigured(): boolean {
+  return !!supabaseUrl && !!supabaseAnonKey;
+}
+
+/** The real typed Supabase client (null in offline/dev mode) */
+const realClient = isSupabaseConfigured()
+  ? createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
+      auth: { autoRefreshToken: true, persistSession: true },
+      db: { schema: 'public' },
+    })
+  : null;
+
+// ── Mock client (for dev/demo without Supabase env vars) ──
+const mock = {
+  from: (_table: string) => ({
+    select: () => Promise.resolve({ data: null, error: new Error('Supabase: client not configured') }),
+    insert: () => Promise.resolve({ data: null, error: new Error('Supabase: client not configured') }),
+    upsert: () => Promise.resolve({ data: null, error: new Error('Supabase: client not configured') }),
+    delete: () => ({
+      eq: () => Promise.resolve({ data: null, error: new Error('Supabase: client not configured') }),
+      in: () => Promise.resolve({ data: null, error: new Error('Supabase: client not configured') }),
+    }),
+  }),
+  rpc: () => Promise.resolve({ data: null, error: new Error('Supabase: client not configured') }),
+  channel: (_name: string) => ({
+    on: () => ({ subscribe: () => ({ unsubscribe: () => {} }) }),
+  }),
+  removeChannel: () => Promise.resolve('ok'),
+  removeAllChannels: () => {},
+  auth: {
+    getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+    onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+    signInWithOtp: () => Promise.resolve({ data: {}, error: null }),
+    signOut: () => Promise.resolve({ error: null }),
+  },
+  realtime: { setAuth: () => {} },
+} as unknown as TypedSupabase;
+
+/** Export the typed client (falls back to mock when env vars missing) */
+export const supabase: TypedSupabase = realClient ?? mock;
+
+/**
+ * Shape of rows in dynamic month tables (rows_YYYY_MM).
+ * Created at runtime, not in Database type.
+ */
+export interface DynamicRow {
+  row_id: string;
+  user_id: string;
+  data: Record<string, string | number | null>;
+  created_at: string;
+}
