@@ -26,10 +26,6 @@ interface SpreadsheetProps {
   rows: Row[];
   selectedMonth: string;
   onDataChange: (newColumns: Column[], newRows: Row[]) => void;
-  onUndo?: () => void;
-  onRedo?: () => void;
-  canUndo?: boolean;
-  canRedo?: boolean;
 }
 
 export default function Spreadsheet({
@@ -37,10 +33,6 @@ export default function Spreadsheet({
   rows,
   selectedMonth,
   onDataChange,
-  onUndo,
-  onRedo,
-  canUndo = false,
-  canRedo = false,
 }: SpreadsheetProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingCell, setEditingCell] = useState<{ rowId: string; colId: string } | null>(null);
