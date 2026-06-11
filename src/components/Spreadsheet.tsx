@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, useDeferredValue } from 'react';
 import {
   Trash2,
   FileSpreadsheet,
@@ -56,6 +56,7 @@ export default function Spreadsheet({
   onDataChange,
 }: SpreadsheetProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const deferredQuery = useDeferredValue(searchQuery);
   const [editingCell, setEditingCell] = useState<{ rowId: string; colId: string } | null>(null);
   const [editValue, setEditValue] = useState<string>('');
   const [activeHeaderSettings, setActiveHeaderSettings] = useState<string | null>(null);
@@ -73,6 +74,19 @@ export default function Spreadsheet({
   const editInputRef = useRef<HTMLInputElement>(null);
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const sortedRowsRef = useRef<Row[]>([]);
+  const timerRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  const scheduleFocus = useCallback((fn: () => void, delay = 10) => {
+    const id = setTimeout(fn, delay);
+    timerRef.current.push(id);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      timerRef.current.forEach(clearTimeout);
+      timerRef.current = [];
+    };
+  }, []);
 
   const showLocalToast = useCallback((message: string, type: ToastData['type'] = 'success') => {
     globalShowToast(setToast, message, type);
@@ -139,74 +153,6 @@ export default function Spreadsheet({
     [],
   );
 
-  /* ── keyboard: Enter → next column, Tab → next col / auto-row ── */
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent, rowId: string, colId: string) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        handleSaveCell(rowId, colId);
-        // Move to next column (same row)
-        const colIdx = columns.findIndex((c) => c.id === colId);
-        if (colIdx < columns.length - 1) {
-          const nextCol = columns[colIdx + 1];
-          const row = rows.find((r) => r.id === rowId);
-          if (row) {
-            setTimeout(() => {
-              handleStartEditing(rowId, nextCol.id, String(row.data[nextCol.id] ?? ''));
-            }, 10);
-          }
-        }
-      } else if (e.key === 'Escape') {
-        e.preventDefault();
-        setEditingCell(null);
-      } else if (e.key === 'Tab' && e.shiftKey) {
-        e.preventDefault();
-        handleSaveCell(rowId, colId);
-        const colIdx = columns.findIndex((c) => c.id === colId);
-        if (colIdx > 0) {
-          const prevCol = columns[colIdx - 1];
-          const row = rows.find((r) => r.id === rowId);
-          if (row) {
-            setTimeout(() => {
-              handleStartEditing(rowId, prevCol.id, String(row.data[prevCol.id] ?? ''));
-            }, 10);
-          }
-        }
-      } else if (e.key === 'Tab') {
-        e.preventDefault();
-        handleSaveCell(rowId, colId);
-        const colIdx = columns.findIndex((c) => c.id === colId);
-        const rowIdx = sortedRowsRef.current.findIndex((r) => r.id === rowId);
-        const isLastCell = colIdx === columns.length - 1 && rowIdx === sortedRowsRef.current.length - 1;
-
-        if (isLastCell) {
-          // AUTO-ADD ROW: Tab on last cell creates new row
-          handleAddRow();
-        } else if (colIdx < columns.length - 1) {
-          // Normal Tab → next column
-          const nextCol = columns[colIdx + 1];
-          const row = rows.find((r) => r.id === rowId);
-          if (row) {
-            setTimeout(() => {
-              handleStartEditing(rowId, nextCol.id, String(row.data[nextCol.id] ?? ''));
-            }, 10);
-          }
-        } else {
-          // Last column → first column of next row
-          const nextRowIdx = rowIdx + 1;
-          if (nextRowIdx < sortedRowsRef.current.length) {
-            const targetRow = sortedRowsRef.current[nextRowIdx];
-            setTimeout(() => {
-              handleStartEditing(targetRow.id, columns[0].id, String(targetRow.data[columns[0].id] ?? ''));
-            }, 10);
-          }
-        }
-      }
-      },
-      [handleSaveCell, columns, rows],
-  );
-
   const handleStartEditing = useCallback((rowId: string, colId: string, value: string) => {
     setEditingCell({ rowId, colId });
     setEditValue(value);
@@ -242,14 +188,14 @@ export default function Spreadsheet({
 
     // Trigger entrance animation
     setAnimatedRowId(newRowId);
-    setTimeout(() => setAnimatedRowId(null), 500);
+    scheduleFocus(() => setAnimatedRowId(null), 500);
 
-    setTimeout(() => {
+    scheduleFocus(() => {
       if (columns.length > 0) {
         handleStartEditing(newRowId, columns[0].id, '');
       }
     }, 50);
-  }, [columns, rows, selectedMonth, onDataChange, handleStartEditing]);
+  }, [columns, rows, selectedMonth, onDataChange, handleStartEditing, scheduleFocus]);
 
   const handleDeleteRow = useCallback(
     (rowId: string) => {
@@ -263,16 +209,76 @@ export default function Spreadsheet({
       globalShowToast(setToast, 'Lançamento excluído', 'info', {
         label: 'Desfazer',
         onClick: () => {
-          // Restore the deleted row
-          onDataChange(columns, [...columns.map(() => deletedRow).slice(0, 1), ...cleanedRows]);
-          // Actually restore properly: insert back at original position
-          const restoredRows = rows; // original full list
-          onDataChange(columns, restoredRows);
+          onDataChange(columns, rows);
           showLocalToast('Exclusão desfeita', 'success');
         },
       });
     },
     [columns, rows, onDataChange],
+  );
+
+  /* ── keyboard: Enter → next column, Tab → next col / auto-row ── */
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent, rowId: string, colId: string) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSaveCell(rowId, colId);
+        const colIdx = columns.findIndex((c) => c.id === colId);
+        if (colIdx < columns.length - 1) {
+          const nextCol = columns[colIdx + 1];
+          const row = rows.find((r) => r.id === rowId);
+          if (row) {
+            scheduleFocus(() => {
+              handleStartEditing(rowId, nextCol.id, String(row.data[nextCol.id] ?? ''));
+            });
+          }
+        }
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        setEditingCell(null);
+      } else if (e.key === 'Tab' && e.shiftKey) {
+        e.preventDefault();
+        handleSaveCell(rowId, colId);
+        const colIdx = columns.findIndex((c) => c.id === colId);
+        if (colIdx > 0) {
+          const prevCol = columns[colIdx - 1];
+          const row = rows.find((r) => r.id === rowId);
+          if (row) {
+            scheduleFocus(() => {
+              handleStartEditing(rowId, prevCol.id, String(row.data[prevCol.id] ?? ''));
+            });
+          }
+        }
+      } else if (e.key === 'Tab') {
+        e.preventDefault();
+        handleSaveCell(rowId, colId);
+        const colIdx = columns.findIndex((c) => c.id === colId);
+        const rowIdx = sortedRowsRef.current.findIndex((r) => r.id === rowId);
+        const isLastCell = colIdx === columns.length - 1 && rowIdx === sortedRowsRef.current.length - 1;
+
+        if (isLastCell) {
+          handleAddRow();
+        } else if (colIdx < columns.length - 1) {
+          const nextCol = columns[colIdx + 1];
+          const row = rows.find((r) => r.id === rowId);
+          if (row) {
+            scheduleFocus(() => {
+              handleStartEditing(rowId, nextCol.id, String(row.data[nextCol.id] ?? ''));
+            });
+          }
+        } else {
+          const nextRowIdx = rowIdx + 1;
+          if (nextRowIdx < sortedRowsRef.current.length) {
+            const targetRow = sortedRowsRef.current[nextRowIdx];
+            scheduleFocus(() => {
+              handleStartEditing(targetRow.id, columns[0].id, String(targetRow.data[columns[0].id] ?? ''));
+            });
+          }
+        }
+      }
+      },
+      [handleSaveCell, columns, rows, scheduleFocus, handleAddRow, handleStartEditing],
   );
 
   /* ── column CRUD ──────────────────────────────────────────── */
@@ -431,12 +437,12 @@ export default function Spreadsheet({
   }, [rows, columns, selectedMonth]);
 
   const filteredRows = useMemo(() => {
-    if (!searchQuery.trim()) return filteredRowsByMonth;
-    const query = searchQuery.toLowerCase();
+    if (!deferredQuery.trim()) return filteredRowsByMonth;
+    const query = deferredQuery.toLowerCase();
     return filteredRowsByMonth.filter((row) =>
       columns.some((col) => String(row.data[col.id] || '').toLowerCase().includes(query))
     );
-  }, [filteredRowsByMonth, columns, searchQuery]);
+  }, [filteredRowsByMonth, columns, deferredQuery]);
 
   const handleSort = useCallback((colId: string) => {
     setSortColId((prev) => {

@@ -57,7 +57,7 @@ export default function DeleteColumnModal({ isOpen, onClose, columns, onDelete }
                 return (
                   <div
                     key={col.id}
-                    className="flex items-center justify-between p-3 bg-slate-50 dark:bg-[#1E222A] border border-slate-150 dark:border-slate-800/80 rounded-xl hover:border-slate-300 dark:hover:border-slate-705 transition"
+                    className="flex items-center justify-between p-3 bg-slate-50 dark:bg-[#1E222A] border border-slate-200 dark:border-slate-800/80 rounded-xl hover:border-slate-300 dark:hover:border-slate-700 transition"
                   >
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{col.name}</span>

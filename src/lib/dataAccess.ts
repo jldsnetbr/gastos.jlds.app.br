@@ -2,6 +2,24 @@ import { supabase } from './supabase';
 import { Column, ColumnType, Row } from '../types';
 import { getMonthTableName } from './tableNames';
 
+const VALID_COLUMN_TYPES = new Set<string>(['text', 'number', 'select', 'date']);
+
+function assertColumnType(val: unknown): ColumnType {
+  if (typeof val === 'string' && VALID_COLUMN_TYPES.has(val)) return val as ColumnType;
+  return 'text';
+}
+
+function assertString(val: unknown, fallback: string): string {
+  return typeof val === 'string' ? val : fallback;
+}
+
+function assertRowData(val: unknown): Row['data'] {
+  if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
+    return val as Row['data'];
+  }
+  return {};
+}
+
 export async function loadColumns(userId: string): Promise<Column[] | null> {
   const { data, error } = await supabase
     .from('user_columns')
@@ -12,9 +30,9 @@ export async function loadColumns(userId: string): Promise<Column[] | null> {
   if (error) return null;
   if (!data) return [];
   return data.map((r) => ({
-    id: r.column_id,
-    name: r.name,
-    type: r.type as ColumnType,
+    id: assertString(r.column_id, ''),
+    name: assertString(r.name, ''),
+    type: assertColumnType(r.type),
     options: Array.isArray(r.options) ? (r.options as string[]) : undefined,
   }));
 }
@@ -77,9 +95,9 @@ export async function loadMonthRows(userId: string, month: string): Promise<Row[
   if (error) return null;
   if (!data || data.length === 0) return null;
   return data.map((r: Record<string, unknown>) => ({
-    id: r.row_id as string,
+    id: assertString(r.row_id, ''),
     month,
-    data: r.data as Row['data'],
+    data: assertRowData(r.data),
   }));
 }
 
@@ -92,7 +110,7 @@ export async function saveMonthRows(userId: string, month: string, rows: Row[]):
       .eq('user_id', userId);
 
     const existingRows: string[] = ((existing ?? []) as Record<string, unknown>[]).map(
-      (r) => r.row_id as string,
+      (r) => assertString(r.row_id, ''),
     );
     const incomingIds = new Set(rows.map((r) => r.id));
 

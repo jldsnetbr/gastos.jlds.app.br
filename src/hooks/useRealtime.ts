@@ -22,9 +22,9 @@ export function subscribeToMonth(
 
   function makeRow(payload: Record<string, unknown>): Row {
     return {
-      id: (payload?.row_id ?? payload?.id) as string,
+      id: typeof payload?.row_id === 'string' ? payload.row_id : typeof payload?.id === 'string' ? payload.id : '',
       month,
-      data: (payload?.data ?? {}) as Row['data'],
+      data: (typeof payload?.data === 'object' && payload.data !== null ? payload.data : {}) as Row['data'],
     };
   }
 
@@ -66,10 +66,11 @@ export function subscribeToMonth(
         .eq('user_id', userId)
         .order('sort_order');
       if (data) {
+        const VALID_TYPES = new Set(['text', 'number', 'select', 'date']);
         const columns: Column[] = data.map((r) => ({
-          id: r.column_id,
-          name: r.name,
-          type: r.type as ColumnType,
+          id: typeof r.column_id === 'string' ? r.column_id : '',
+          name: typeof r.name === 'string' ? r.name : '',
+          type: (typeof r.type === 'string' && VALID_TYPES.has(r.type) ? r.type : 'text') as ColumnType,
           options: Array.isArray(r.options) ? (r.options as string[]) : undefined,
         }));
         callbacks.onColumnsChange(columns);

@@ -120,7 +120,7 @@ export default function ColumnSettingsMenu({
               <button
                 id={`col-delete-btn-${column.id}`}
                 onClick={() => { onDelete(column.id); onClose(); }}
-                className="flex items-center gap-2.5 w-full px-4 py-2 text-sm hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-600 dark:text-rose-450 text-left transition"
+                className="flex items-center gap-2.5 w-full px-4 py-2 text-sm hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-600 dark:text-rose-400 text-left transition"
               >
                 <Trash2 className="w-4 h-4" />
                 <span className="font-medium">Excluir Coluna</span>

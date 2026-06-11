@@ -13,25 +13,26 @@ import {
   Loader2,
   Loader,
 } from 'lucide-react';
-import { Column, Row, HistoryState } from './types';
+import { Column, Row } from './types';
 import KPICard from './components/KPICard';
+import { SectionErrorBoundary } from './components/SectionErrorBoundary';
 
 const Spreadsheet = lazy(() => import('./components/Spreadsheet'));
 const Auth = lazy(() => import('./pages/Auth'));
 import { useAuth } from './contexts/AuthContext';
 import { calculateSummary } from './utils/financeHelper';
 import { navigateMonth, formatMonthLabel } from './utils/monthUtils';
-import { getTheme, setTheme, Theme } from './utils/storage';
 import { useSpreadsheetData } from './hooks/useSpreadsheetData';
+import { useUndoRedo } from './hooks/useUndoRedo';
+import { useTheme } from './hooks/useTheme';
 import { coerceDateInMonth } from './utils/dateCoercion';
-import { DEFAULT_MONTH, MAX_HISTORY_SIZE } from './constants';
+import { DEFAULT_MONTH } from './constants';
 
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth();
   const [selectedMonth, setSelectedMonth] = useState<string>(DEFAULT_MONTH);
-  const [history, setHistory] = useState<HistoryState[]>([]);
-  const [currentIndex, setCurrentIndex] = useState<number>(-1);
-  const [theme, setThemeState] = useState<Theme>(() => getTheme());
+  const { theme, cycleTheme } = useTheme();
+  const { pushState, reset: resetHistory } = useUndoRedo();
 
   const { columns, rows, dataLoaded, syncStatus, setColumns, setRows } = useSpreadsheetData(
     user?.id,
@@ -41,25 +42,8 @@ export default function App() {
   // Reset history when data changes month
   useEffect(() => {
     if (!dataLoaded) return;
-    setHistory([{ columns, rows }]);
-    setCurrentIndex(0);
-  }, [selectedMonth, dataLoaded]);
-
-  useEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.remove('dark', 'midnight');
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else if (theme === 'midnight') {
-      root.classList.add('dark', 'midnight');
-    }
-    setTheme(theme);
-  }, [theme]);
-
-  const cycleTheme = () => {
-    const next: Theme = theme === 'light' ? 'dark' : theme === 'dark' ? 'midnight' : 'light';
-    setThemeState(next);
-  };
+    resetHistory({ columns, rows });
+  }, [selectedMonth, dataLoaded, columns, rows, resetHistory]);
 
   const themeIcon = theme === 'light'
     ? <Moon className="w-[18px] h-[18px]" />
@@ -92,14 +76,10 @@ export default function App() {
       setRows(enforcedRows);
 
       if (!skipHistory) {
-        const cleanHistory = history.slice(0, currentIndex + 1);
-        const nextHistory = [...cleanHistory, { columns: newCols, rows: enforcedRows }];
-        if (nextHistory.length > MAX_HISTORY_SIZE) nextHistory.shift();
-        setHistory(nextHistory);
-        setCurrentIndex(nextHistory.length - 1);
+        pushState({ columns: newCols, rows: enforcedRows });
       }
     },
-    [selectedMonth, history, currentIndex, setColumns, setRows]
+    [selectedMonth, setColumns, setRows, pushState]
   );
 
   const dateColId = useMemo(() => columns.find((c) => c.type === 'date')?.id, [columns]);
@@ -130,14 +110,12 @@ export default function App() {
     saving: 'sync-dot sync-dot-saving',
     saved: 'sync-dot sync-dot-saved',
     offline: 'sync-dot sync-dot-offline',
-    error: 'sync-dot sync-dot-error',
   }[syncStatus];
   const syncLabel = {
     idle: '',
     saving: 'Salvando...',
     saved: 'Salvo',
     offline: 'Offline',
-    error: 'Erro ao salvar',
   }[syncStatus];
 
   return (
@@ -232,20 +210,22 @@ export default function App() {
             </div>
           </div>
           {dataLoaded ? (
-            <Suspense
-              fallback={
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-6 h-6 text-indigo-500 animate-spin" />
-                </div>
-              }
-            >
-              <Spreadsheet
-                columns={columns}
-                rows={rows}
-                selectedMonth={selectedMonth}
-                onDataChange={updateData}
-              />
-            </Suspense>
+            <SectionErrorBoundary fallbackTitle="Erro na planilha">
+              <Suspense
+                fallback={
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-6 h-6 text-indigo-500 animate-spin" />
+                  </div>
+                }
+              >
+                <Spreadsheet
+                  columns={columns}
+                  rows={rows}
+                  selectedMonth={selectedMonth}
+                  onDataChange={updateData}
+                />
+              </Suspense>
+            </SectionErrorBoundary>
           ) : (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-6 h-6 text-indigo-500 animate-spin" />

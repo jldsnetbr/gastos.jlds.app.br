@@ -40,7 +40,6 @@ export function useSpreadsheetData(
   const [rows, setRows] = useState<Row[]>([]);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
-  const monthRef = useRef(month);
   const initializedUsersRef = useRef<Set<string>>(new Set());
   const skipNextColumnsRef = useRef(false);
 
@@ -125,8 +124,6 @@ export function useSpreadsheetData(
   useEffect(() => {
     if (!dataLoaded || !userId) return;
 
-    monthRef.current = month;
-
     const handleRowEvent = (type: RealtimeEventType, row: Row) => {
       setRows((prev) => {
         if (type === 'INSERT') {
@@ -158,13 +155,23 @@ export function useSpreadsheetData(
     if (userId) await fetchAndSet(userId, month);
   }, [userId, month, fetchAndSet]);
 
+  const setColumnsAndSync = useCallback((cols: Column[]) => {
+    setColumns(cols);
+    updateRemote(cols, rows);
+  }, [updateRemote, rows]);
+
+  const setRowsAndSync = useCallback((r: Row[]) => {
+    setRows(r);
+    updateRemote(columns, r);
+  }, [updateRemote, columns]);
+
   return {
     columns,
     rows,
     dataLoaded,
     syncStatus,
-    setColumns: (cols) => { setColumns(cols); updateRemote(cols, rows); },
-    setRows: (r) => { setRows(r); updateRemote(columns, r); },
+    setColumns: setColumnsAndSync,
+    setRows: setRowsAndSync,
     refresh,
   };
 }
