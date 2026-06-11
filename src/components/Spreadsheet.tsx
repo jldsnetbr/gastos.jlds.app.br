@@ -353,7 +353,7 @@ export default function Spreadsheet({
       const aVal = a.data[sortColId] ?? '';
       const bVal = b.data[sortColId] ?? '';
 
-      let cmp = 0;
+      let cmp: number;
       if (col.type === 'number') {
         const aNum = typeof aVal === 'number' ? aVal : parseFloat(String(aVal)) || 0;
         const bNum = typeof bVal === 'number' ? bVal : parseFloat(String(bVal)) || 0;
