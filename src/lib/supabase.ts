@@ -4,9 +4,16 @@ import type { Database } from '../database.types';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
+// Backward compatibility: se a nova chave não estiver definida, tenta a antiga
+const resolvedKey = supabaseAnonKey || import.meta.env.VITE_SUPABASE_ANON_KEY;
+
 const missingVars: string[] = [];
 if (!supabaseUrl) missingVars.push('VITE_SUPABASE_URL');
-if (!supabaseAnonKey) missingVars.push('VITE_SUPABASE_PUBLISHABLE_KEY');
+if (!supabaseAnonKey && !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+  missingVars.push('VITE_SUPABASE_PUBLISHABLE_KEY');
+} else if (import.meta.env.VITE_SUPABASE_ANON_KEY) {
+  console.warn('Supabase: usando VITE_SUPABASE_ANON_KEY legada — migre para VITE_SUPABASE_PUBLISHABLE_KEY');
+}
 
 if (missingVars.length > 0) {
   console.warn(
@@ -17,12 +24,12 @@ if (missingVars.length > 0) {
 type TypedSupabase = ReturnType<typeof createClient<Database>>;
 
 function isSupabaseConfigured(): boolean {
-  return !!supabaseUrl && !!supabaseAnonKey;
+  return !!supabaseUrl && !!resolvedKey;
 }
 
 /** The real typed Supabase client (null in offline/dev mode) */
 const realClient = isSupabaseConfigured()
-  ? createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
+  ? createClient<Database>(supabaseUrl!, resolvedKey!, {
       auth: { autoRefreshToken: true, persistSession: true },
       db: { schema: 'public' },
     })
