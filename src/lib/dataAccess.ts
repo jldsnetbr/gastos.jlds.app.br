@@ -19,35 +19,39 @@ export async function loadColumns(userId: string): Promise<Column[] | null> {
 }
 
 export async function saveColumns(userId: string, columns: Column[]): Promise<void> {
-  const { data: existing } = await supabase
-    .from('user_columns')
-    .select('column_id')
-    .eq('user_id', userId);
-
-  const existingIds = new Set((existing ?? []).map((r) => r.column_id));
-  const incomingIds = new Set(columns.map((c) => c.id));
-
-  const toDelete = [...existingIds].filter((id) => !incomingIds.has(id));
-  if (toDelete.length > 0) {
-    await supabase
+  try {
+    const { data: existing } = await supabase
       .from('user_columns')
-      .delete()
-      .eq('user_id', userId)
-      .in('column_id', toDelete);
-  }
+      .select('column_id')
+      .eq('user_id', userId);
 
-  if (columns.length > 0) {
-    const toUpsert = columns.map((col, i) => ({
-      user_id: userId,
-      column_id: col.id,
-      name: col.name,
-      type: col.type,
-      options: col.options ?? null,
-      sort_order: i,
-    }));
-    await supabase
-      .from('user_columns')
-      .upsert(toUpsert, { onConflict: 'user_id,column_id' });
+    const existingIds = new Set((existing ?? []).map((r) => r.column_id));
+    const incomingIds = new Set(columns.map((c) => c.id));
+
+    const toDelete = [...existingIds].filter((id) => !incomingIds.has(id));
+    if (toDelete.length > 0) {
+      await supabase
+        .from('user_columns')
+        .delete()
+        .eq('user_id', userId)
+        .in('column_id', toDelete);
+    }
+
+    if (columns.length > 0) {
+      const toUpsert = columns.map((col, i) => ({
+        user_id: userId,
+        column_id: col.id,
+        name: col.name,
+        type: col.type,
+        options: col.options ?? null,
+        sort_order: i,
+      }));
+      await supabase
+        .from('user_columns')
+        .upsert(toUpsert, { onConflict: 'user_id,column_id' });
+    }
+  } catch (err) {
+    console.warn('saveColumns failed:', err);
   }
 }
 
@@ -81,30 +85,34 @@ export async function loadMonthRows(userId: string, month: string): Promise<Row[
 export async function saveMonthRows(userId: string, month: string, rows: Row[]): Promise<void> {
   const tableName = getMonthTableName(month);
 
-  const { data: existing } = await qb(tableName)
-    .select('row_id')
-    .eq('user_id', userId);
+  try {
+    const { data: existing } = await qb(tableName)
+      .select('row_id')
+      .eq('user_id', userId);
 
-  const existingRows: string[] = ((existing ?? []) as Record<string, unknown>[]).map(
-    (r) => r.row_id as string,
-  );
-  const incomingIds = new Set(rows.map((r) => r.id));
+    const existingRows: string[] = ((existing ?? []) as Record<string, unknown>[]).map(
+      (r) => r.row_id as string,
+    );
+    const incomingIds = new Set(rows.map((r) => r.id));
 
-  const toDelete = existingRows.filter((id) => !incomingIds.has(id));
-  if (toDelete.length > 0) {
-    await qb(tableName)
-      .delete()
-      .eq('user_id', userId)
-      .in('row_id', toDelete);
-  }
+    const toDelete = existingRows.filter((id) => !incomingIds.has(id));
+    if (toDelete.length > 0) {
+      await qb(tableName)
+        .delete()
+        .eq('user_id', userId)
+        .in('row_id', toDelete);
+    }
 
-  if (rows.length > 0) {
-    const toUpsert = rows.map((r) => ({
-      user_id: userId,
-      row_id: r.id,
-      data: r.data,
-    }));
-    await qb(tableName)
-      .upsert(toUpsert, { onConflict: 'user_id,row_id' });
+    if (rows.length > 0) {
+      const toUpsert = rows.map((r) => ({
+        user_id: userId,
+        row_id: r.id,
+        data: r.data,
+      }));
+      await qb(tableName)
+        .upsert(toUpsert, { onConflict: 'user_id,row_id' });
+    }
+  } catch (err) {
+    console.warn('saveMonthRows failed:', err);
   }
 }

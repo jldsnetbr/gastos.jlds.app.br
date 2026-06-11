@@ -16,7 +16,7 @@ export function subscribeToMonth(
 ): () => void {
   const tableName = getMonthTableName(month);
 
-  const channel = supabase.channel(tableName);
+  const channel = supabase.channel(`${tableName}:${userId}`);
 
   function makeRow(payload: Record<string, unknown>): Row {
     return {

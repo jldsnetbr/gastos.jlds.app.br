@@ -2,11 +2,11 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from '../database.types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 const missingVars: string[] = [];
 if (!supabaseUrl) missingVars.push('VITE_SUPABASE_URL');
-if (!supabaseAnonKey) missingVars.push('VITE_SUPABASE_ANON_KEY');
+if (!supabaseAnonKey) missingVars.push('VITE_SUPABASE_PUBLISHABLE_KEY');
 
 if (missingVars.length > 0) {
   console.warn(
