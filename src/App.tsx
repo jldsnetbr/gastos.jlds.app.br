@@ -234,6 +234,7 @@ export default function App() {
                   rows={rows}
                   selectedMonth={selectedMonth}
                   onDataChange={updateData}
+                  theme={theme}
                 />
               </Suspense>
             </SectionErrorBoundary>

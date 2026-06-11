@@ -15,12 +15,15 @@ import SpreadsheetFooter from './SpreadsheetFooter';
 import { coerceDateInMonth } from '../utils/dateCoercion';
 import { parseCSV, toCSV, downloadCSV } from '../utils/csv';
 import { showToast as globalShowToast } from '../utils/toast';
+import type { Theme } from '../utils/storage';
+import { mp } from '../utils/theme';
 
 interface SpreadsheetProps {
   columns: Column[];
   rows: Row[];
   selectedMonth: string;
   onDataChange: (newColumns: Column[], newRows: Row[]) => void;
+  theme?: Theme;
 }
 
 /* ── helpers ───────────────────────────────────────────────── */
@@ -54,6 +57,7 @@ export default function Spreadsheet({
   rows,
   selectedMonth,
   onDataChange,
+  theme = 'light',
 }: SpreadsheetProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const deferredQuery = useDeferredValue(searchQuery);
@@ -511,7 +515,10 @@ export default function Spreadsheet({
   /* ══════════════════════════════════════════════════════════ */
 
   return (
-    <div id="spreadsheet-container" className="bg-white dark:bg-[#161920] border border-slate-200 dark:border-slate-700/60 rounded-2xl shadow-sm dark:shadow-xl dark:shadow-black/10 overflow-hidden relative">
+    <div id="spreadsheet-container" style={{
+      backgroundColor: mp(theme, 'surface'),
+      borderColor: mp(theme, 'border'),
+    }} className="bg-white dark:bg-[#161920] border border-slate-200 dark:border-slate-700/60 rounded-2xl shadow-sm dark:shadow-xl dark:shadow-black/10 overflow-hidden relative">
       <SpreadsheetToolbar
         searchQuery={searchQuery}
         onSearchChange={(value) => setSearchQuery(value)}
@@ -524,6 +531,7 @@ export default function Spreadsheet({
         onOpenDeleteColumn={() => setShowDeleteColumnModal(true)}
         filteredCount={sortedRows.length}
         totalCount={filteredRowsByMonth.length}
+        theme={theme}
       />
 
       {/* ═══ MOBILE CARD VIEW ═══ */}
@@ -809,6 +817,7 @@ export default function Spreadsheet({
       <SpreadsheetFooter
         filteredCount={sortedRows.length}
         totalCount={filteredRowsByMonth.length}
+        theme={theme}
       />
 
       {/* Modals & Toast */}
