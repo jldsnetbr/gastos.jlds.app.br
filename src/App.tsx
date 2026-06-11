@@ -123,12 +123,12 @@ export default function App() {
   }[syncStatus];
 
   return (
-    <div id="finance-app-root" className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-[#0F1115] dark:via-[#12141B] dark:to-[#0F1115] text-slate-900 dark:text-slate-200 transition-colors duration-300">
+    <div id="finance-app-root" className="min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-50 dark:from-[#0F1115] dark:via-[#12141B] dark:to-[#0F1115] text-slate-900 dark:text-slate-200 transition-colors duration-300">
       {/* Header with glass effect */}
       <header id="main-header" className="sticky top-0 z-30 bg-white/70 dark:bg-[#161920]/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 py-4 transition-colors duration-300 shadow-sm dark:shadow-lg dark:shadow-black/10">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-indigo-500 dark:to-indigo-600 rounded-xl text-white shadow-md shadow-blue-500/20 dark:shadow-indigo-500/20">
+            <div className="p-2.5 bg-linear-to-br from-blue-600 to-indigo-600 dark:from-indigo-500 dark:to-indigo-600 rounded-xl text-white shadow-md shadow-blue-500/20 dark:shadow-indigo-500/20">
               <LayoutGrid className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -202,7 +202,7 @@ export default function App() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
+                <div className="w-6 h-6 rounded-lg bg-linear-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
                   <Layers className="w-3.5 h-3.5 text-white" />
                 </div>
                 Lançamentos Financeiros

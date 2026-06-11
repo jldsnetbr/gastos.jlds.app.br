@@ -32,7 +32,7 @@ describe('Spreadsheet', () => {
       />
     );
 
-    expect(screen.getByTitle('Centralizar planilha')).toBeDefined();
+    expect(screen.getByTitle('Centralizar planilha')).toBeInTheDocument();
   });
 
   it('renders search input', () => {
@@ -45,9 +45,7 @@ describe('Spreadsheet', () => {
       />
     );
 
-    expect(
-      screen.getAllByPlaceholderText('Buscar na planilha...').length
-    ).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByTestId('spreadsheet-search').length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders column headers as editable inputs', () => {
@@ -96,10 +94,9 @@ describe('Spreadsheet', () => {
       />
     );
 
-    const searchInput = screen.getAllByPlaceholderText('Buscar na planilha...')[0];
+    const searchInput = screen.getAllByTestId('spreadsheet-search')[0];
     fireEvent.change(searchInput, { target: { value: 'Aluguel' } });
 
-    // After filtering for "Aluguel", the visible count should show 1
     expect(screen.getAllByText('Aluguel').length).toBeGreaterThanOrEqual(1);
   });
 
@@ -113,9 +110,9 @@ describe('Spreadsheet', () => {
       />
     );
 
-    const searchInput = screen.getAllByPlaceholderText('Buscar na planilha...')[0];
+    const searchInput = screen.getAllByTestId('spreadsheet-search')[0];
     fireEvent.change(searchInput, { target: { value: 'zzzzzz' } });
-    expect(screen.getByText('Nenhum resultado encontrado')).toBeDefined();
+    expect(screen.getByText('Nenhum resultado encontrado')).toBeInTheDocument();
   });
 
   it('shows empty month message when no rows', () => {
@@ -128,7 +125,7 @@ describe('Spreadsheet', () => {
       />
     );
 
-    expect(screen.getByText('Nenhum lançamento neste mês')).toBeDefined();
+    expect(screen.getByText('Nenhum lançamento neste mês')).toBeInTheDocument();
   });
 
   it('renders action buttons', () => {
@@ -158,9 +155,9 @@ describe('Spreadsheet', () => {
       />
     );
 
-    const threes = screen.getAllByText('3');
-    const rowIndex = threes.find((el) => el.closest('td'));
-    expect(rowIndex).toBeDefined();
+    const rows = screen.getAllByRole('row');
+    // A 4ª row (index 3) é a terceira linha de dados (cabeçalho = row 0)
+    expect(rows[3]).toBeInTheDocument();
   });
 
   it('shows footer help text and record count', () => {

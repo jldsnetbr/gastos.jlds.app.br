@@ -329,7 +329,7 @@ export default function Spreadsheet({
   return (
     <div id="spreadsheet-container" className="bg-white dark:bg-[#161920] border border-slate-200 dark:border-slate-700/60 rounded-2xl shadow-sm dark:shadow-xl dark:shadow-black/10 overflow-hidden relative">
       {/* Toolbar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between p-5 gap-4 border-b border-slate-200/60 dark:border-slate-700/40 bg-gradient-to-r from-white via-slate-50/80 to-white dark:from-[#161920] dark:via-[#1A1E28]/60 dark:to-[#161920]">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between p-5 gap-4 border-b border-slate-200/60 dark:border-slate-700/40 bg-linear-to-r from-white via-slate-50/80 to-white dark:from-[#161920] dark:via-[#1A1E28]/60 dark:to-[#161920]">
         {/* Left toolbar group */}
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Centralizar planilha */}
@@ -348,6 +348,8 @@ export default function Spreadsheet({
             <input
               id="spreadsheet-search"
               type="text"
+              data-testid="spreadsheet-search"
+              aria-label="Buscar na planilha"
               placeholder="Buscar na planilha..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -408,7 +410,7 @@ export default function Spreadsheet({
           <button
             id="btn-add-row-quick"
             onClick={handleAddRow}
-            className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-gradient-to-r from-slate-800 to-slate-700 dark:from-indigo-600 dark:to-indigo-500 hover:from-slate-700 hover:to-slate-600 dark:hover:from-indigo-500 dark:hover:to-indigo-400 rounded-lg transition-all duration-200 shadow-sm active:scale-95"
+            className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-linear-to-r from-slate-800 to-slate-700 dark:from-indigo-600 dark:to-indigo-500 hover:from-slate-700 hover:to-slate-600 dark:hover:from-indigo-500 dark:hover:to-indigo-400 rounded-lg transition-all duration-200 shadow-sm active:scale-95"
           >
             <Plus className="w-4.5 h-4.5" />
             <span>Adicionar Linha</span>
@@ -496,7 +498,7 @@ export default function Spreadsheet({
                       <td
                         id={`cell-${row.id}-${col.id}`}
                         key={col.id}
-                        role="button"
+                        role="gridcell"
                         tabIndex={0}
                         aria-label={`${col.name}: ${String(value)}`}
                         onKeyDown={(e) => {
@@ -566,7 +568,7 @@ export default function Spreadsheet({
       </div>
 
       {/* Footer */}
-      <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 bg-gradient-to-r from-slate-50/40 to-white/40 dark:from-[#1A1E28]/30 dark:to-[#161920]/30 border-t border-slate-200/50 dark:border-slate-700/40 text-xs text-slate-400 dark:text-slate-500 gap-2">
+      <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 bg-linear-to-r from-slate-50/40 to-white/40 dark:from-[#1A1E28]/30 dark:to-[#161920]/30 border-t border-slate-200/50 dark:border-slate-700/40 text-xs text-slate-400 dark:text-slate-500 gap-2">
         <div className="flex items-center gap-2">
           <HelpCircle className="w-[14px] h-[14px] text-slate-300 dark:text-slate-600" />
           <span>Clique em qualquer célula para editá-la</span>
