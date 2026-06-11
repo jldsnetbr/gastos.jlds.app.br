@@ -726,14 +726,22 @@ export default function Spreadsheet({
                                   value={editValue}
                                   onChange={(e) => setEditValue(e.target.value)}
                                   onBlur={() => {
-                                    // Validate select columns on blur
+                                    // Validate select columns on blur — save corrected value directly
                                     if (col.type === 'select') {
                                       const valid = (col.options || ['Entrada', 'Saída']);
                                       const match = valid.find(
                                         (o) => o.toLowerCase() === editValue.toLowerCase()
                                       );
                                       if (match && match !== editValue) {
-                                        setEditValue(match);
+                                        // Save with corrected value directly (bypass async state)
+                                        const updatedRows = rows.map((r) =>
+                                          r.id === row.id
+                                            ? { ...r, month: selectedMonth, data: { ...r.data, [col.id]: match } }
+                                            : r
+                                        );
+                                        onDataChange(columns, updatedRows);
+                                        setEditingCell(null);
+                                        return;
                                       }
                                     }
                                     handleSaveCell(row.id, col.id);
