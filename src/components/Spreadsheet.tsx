@@ -3,14 +3,13 @@ import {
   Plus,
   Trash2,
   Search,
-  Undo2,
-  Redo2,
   Download,
   Upload,
   X,
   HelpCircle,
   PlusCircle,
   FileSpreadsheet,
+  ChevronsLeft,
 } from 'lucide-react';
 import { Column, Row, ColumnType } from '../types';
 import Toast, { ToastData } from './Toast';
@@ -52,9 +51,16 @@ export default function Spreadsheet({
   const [toast, setToast] = useState<ToastData | null>(null);
 
   const editInputRef = useRef<HTMLInputElement>(null);
+  const tableContainerRef = useRef<HTMLDivElement>(null);
 
   const showLocalToast = useCallback((message: string, type: ToastData['type'] = 'success') => {
     globalShowToast(setToast, message, type);
+  }, []);
+
+  const handleCenterSpreadsheet = useCallback(() => {
+    if (tableContainerRef.current) {
+      tableContainerRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+    }
   }, []);
 
   useEffect(() => {
@@ -334,36 +340,15 @@ export default function Spreadsheet({
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between p-5 gap-4 border-b border-slate-200/60 dark:border-slate-700/40 bg-gradient-to-r from-white via-slate-50/80 to-white dark:from-[#161920] dark:via-[#1A1E28]/60 dark:to-[#161920]">
         {/* Left toolbar group */}
         <div className="flex flex-wrap items-center gap-2.5">
-          {/* Undo / Redo */}
-          <div className="flex items-center gap-px bg-slate-100 dark:bg-[#1E222A]/80 rounded-lg p-0.5 border border-slate-200/40 dark:border-slate-700/40">
-            <button
-              id="btn-undo"
-              onClick={onUndo}
-              disabled={!canUndo}
-              title="Desfazer"
-              className={`p-2 rounded-md transition active:scale-90 ${
-                canUndo
-                  ? 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-[#252A34]'
-                  : 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
-              }`}
-            >
-              <Undo2 className="w-[18px] h-[18px]" />
-            </button>
-            <div className="w-px h-5 bg-slate-200/50 dark:bg-slate-700/50" />
-            <button
-              id="btn-redo"
-              onClick={onRedo}
-              disabled={!canRedo}
-              title="Refazer"
-              className={`p-2 rounded-md transition active:scale-90 ${
-                canRedo
-                  ? 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-[#252A34]'
-                  : 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
-              }`}
-            >
-              <Redo2 className="w-[18px] h-[18px]" />
-            </button>
-          </div>
+          {/* Centralizar planilha */}
+          <button
+            id="btn-center-spreadsheet"
+            onClick={handleCenterSpreadsheet}
+            title="Centralizar planilha"
+            className="p-2 rounded-md transition active:scale-90 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-[#252A34] bg-slate-100 dark:bg-[#1E222A]/80 border border-slate-200/40 dark:border-slate-700/40"
+          >
+            <ChevronsLeft className="w-[18px] h-[18px]" />
+          </button>
 
           {/* Search bar */}
           <div className="relative flex-1 min-w-[180px] max-w-xs">
@@ -440,7 +425,7 @@ export default function Spreadsheet({
       </div>
 
       {/* Spreadsheet table */}
-      <div className="overflow-x-auto w-full max-h-[60vh] overflow-y-auto">
+      <div ref={tableContainerRef} className="overflow-x-auto w-full max-h-[60vh] overflow-y-auto">
         <table id="excel-spreadsheet-table" className="w-full text-left border-collapse table-fixed select-text">
           <thead className="sticky top-0 z-20">
             <tr>
