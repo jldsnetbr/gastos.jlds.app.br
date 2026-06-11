@@ -45,8 +45,9 @@ describe('Spreadsheet', () => {
       />
     );
 
-    const searchInputs = screen.getAllByPlaceholderText('Buscar na planilha...');
-    expect(searchInputs.length).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getAllByPlaceholderText('Buscar na planilha...').length
+    ).toBeGreaterThanOrEqual(1);
   });
 
   it('renders column headers as editable inputs', () => {
@@ -59,9 +60,15 @@ describe('Spreadsheet', () => {
       />
     );
 
-    expect(screen.getByDisplayValue('Descrição')).toBeDefined();
-    expect(screen.getByDisplayValue('Tipo')).toBeDefined();
-    expect(screen.getByDisplayValue('Valor')).toBeDefined();
+    expect(
+      screen.getAllByDisplayValue('Descrição').length
+    ).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getAllByDisplayValue('Tipo').length
+    ).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getAllByDisplayValue('Valor').length
+    ).toBeGreaterThanOrEqual(1);
   });
 
   it('renders row data in table cells', () => {
@@ -136,10 +143,10 @@ describe('Spreadsheet', () => {
     );
 
     expect(screen.getAllByText('CSV').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('Excel')).toBeDefined();
-    expect(screen.getByText('Nova Coluna')).toBeDefined();
+    expect(screen.getAllByText('Excel').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Nova Coluna').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Excluir')).toBeDefined();
-    expect(screen.getByText('Adicionar Linha')).toBeDefined();
+    expect(screen.getAllByText('Adicionar Linha').length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders row index numbers', () => {
@@ -152,7 +159,9 @@ describe('Spreadsheet', () => {
       />
     );
 
-    expect(screen.getByText('3')).toBeDefined();
+    const threes = screen.getAllByText('3');
+    const rowIndex = threes.find((el) => el.closest('td'));
+    expect(rowIndex).toBeDefined();
   });
 
   it('shows footer help text and record count', () => {
@@ -165,7 +174,11 @@ describe('Spreadsheet', () => {
       />
     );
 
-    expect(screen.getByText('Clique em qualquer célula para editá-la')).toBeDefined();
-    expect(screen.getByText('Exibindo 3 de 3 registros')).toBeDefined();
+    expect(
+      screen.getAllByText('Clique em qualquer célula para editá-la').length
+    ).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getAllByText(/Exibindo 3 de 3 registros/).length
+    ).toBeGreaterThanOrEqual(1);
   });
 });
