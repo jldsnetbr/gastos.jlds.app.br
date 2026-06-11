@@ -143,64 +143,91 @@ export default function App() {
   }[syncStatus];
 
   return (
-    <div id="finance-app-root" className="min-h-screen bg-slate-50 dark:bg-[#0F1115] text-slate-900 dark:text-slate-200 transition-colors duration-200">
-      <header id="main-header" className="bg-white dark:bg-[#161920] border-b border-slate-200 dark:border-slate-800 py-5 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div id="finance-app-root" className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-[#0F1115] dark:via-[#12141B] dark:to-[#0F1115] text-slate-900 dark:text-slate-200 transition-colors duration-300">
+      {/* Header with glass effect */}
+      <header id="main-header" className="sticky top-0 z-30 bg-white/70 dark:bg-[#161920]/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 py-4 transition-colors duration-300 shadow-sm dark:shadow-lg dark:shadow-black/10">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-blue-600 dark:bg-indigo-650 rounded-xl text-white shadow-md shadow-blue-500/20 dark:shadow-indigo-550/10">
+            <div className="p-2.5 bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-indigo-500 dark:to-indigo-600 rounded-xl text-white shadow-md shadow-blue-500/20 dark:shadow-indigo-500/20">
               <LayoutGrid className="w-6 h-6 text-white" />
             </div>
             <div>
               <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
-                FinanSpread<span className="text-blue-500 dark:text-indigo-400 font-sans font-light italic">OS</span>
+                FinanSpread<span className="text-blue-500 dark:text-indigo-400 font-light italic">OS</span>
               </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Planilha inteligente de controle financeiro pessoal estilo Excel
+              <p className="text-xs text-slate-400 dark:text-slate-500">
+                Planilha inteligente de controle financeiro pessoal
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 bg-slate-100/80 dark:bg-[#1E222A] rounded-lg border border-slate-200/60 dark:border-slate-800 p-0.5">
-              <button id="btn-prev-month" onClick={handlePrevMonth} title="Mês anterior" className="p-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-[#252A34] rounded transition shadow-3xs">
+            <div className="flex items-center gap-0.5 bg-slate-100/80 dark:bg-[#1E222A]/80 rounded-lg border border-slate-200/40 dark:border-slate-700/50 p-0.5 shadow-xs">
+              <button id="btn-prev-month" onClick={handlePrevMonth} title="Mês anterior" className="p-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-[#252A34] rounded transition active:scale-90">
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <span className="px-3 text-2xs md:text-xs font-semibold text-slate-700 dark:text-slate-300 min-w-[110px] md:min-w-[120px] text-center select-none font-mono tracking-wide">
                 {formatMonthLabel(selectedMonth).toUpperCase()}
               </span>
-              <button id="btn-next-month" onClick={handleNextMonth} title="Próximo mês" className="p-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-[#252A34] rounded transition shadow-3xs">
+              <button id="btn-next-month" onClick={handleNextMonth} title="Próximo mês" className="p-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-[#252A34] rounded transition active:scale-90">
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
             {syncIcon && (
-              <div className="p-2" title={syncStatus === 'offline' ? 'Offline - será sincronizado depois' : syncStatus === 'saving' ? 'Salvando...' : 'Salvo'}>
+              <div className="p-1.5" title={syncStatus === 'offline' ? 'Offline - será sincronizado depois' : syncStatus === 'saving' ? 'Salvando...' : 'Salvo'}>
                 {syncIcon}
               </div>
             )}
-            <button id="theme-toggler" onClick={() => setDarkMode(!darkMode)} title="Trocar tema" className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1E222A] rounded-lg border border-slate-200/50 dark:border-slate-800 transition">
-              {darkMode ? <Sun className="w-4.5 h-4.5 text-amber-400" /> : <Moon className="w-4.5 h-4.5" />}
+            <button id="theme-toggler" onClick={() => setDarkMode(!darkMode)} title="Trocar tema" className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-[#1E222A]/80 rounded-lg border border-slate-200/40 dark:border-slate-700/50 transition active:scale-90">
+              {darkMode ? <Sun className="w-[18px] h-[18px] text-amber-400" /> : <Moon className="w-[18px] h-[18px]" />}
             </button>
-            <button id="btn-signout" onClick={signOut} title="Sair" className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1E222A] rounded-lg border border-slate-200/50 dark:border-slate-800 transition">
-              <LogOut className="w-4.5 h-4.5" />
+            <button id="btn-signout" onClick={signOut} title="Sair" className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-[#1E222A]/80 rounded-lg border border-slate-200/40 dark:border-slate-700/50 transition active:scale-90">
+              <LogOut className="w-[18px] h-[18px]" />
             </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8 space-y-8">
-        <div id="financial-summary-cards" className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <KPICard id="kpi-entradas" title="Entradas (Receitas)" value={entradas} icon={TrendingUp} variant="green" subtitle="Soma de valores positivos / créditos" />
-          <KPICard id="kpi-saidas" title="Saídas (Despesas)" value={saidas} icon={TrendingDown} variant="red" subtitle="Soma de saídas / débitos categorizados" />
-          <KPICard id="kpi-saldo" title="Saldo Disponível" value={saldo} icon={Wallet} variant="mixed" subtitle="Patrimônio líquido calculado" />
+      <main className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8 space-y-7">
+        {/* KPI Cards */}
+        <div id="financial-summary-cards" className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+          <KPICard
+            id="kpi-entradas"
+            title="Entradas (Receitas)"
+            value={entradas}
+            icon={TrendingUp}
+            variant="green"
+            subtitle="Soma de valores positivos / créditos"
+          />
+          <KPICard
+            id="kpi-saidas"
+            title="Saídas (Despesas)"
+            value={saidas}
+            icon={TrendingDown}
+            variant="red"
+            subtitle="Soma de saídas / débitos categorizados"
+            referenceValue={entradas}
+          />
+          <KPICard
+            id="kpi-saldo"
+            title="Saldo Disponível"
+            value={saldo}
+            icon={Wallet}
+            variant="mixed"
+            subtitle="Patrimônio líquido calculado"
+          />
         </div>
 
+        {/* Spreadsheet */}
         <section id="spreadsheet-section" className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Layers className="w-5 h-5 text-blue-500" />
+                <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
+                  <Layers className="w-3.5 h-3.5 text-white" />
+                </div>
                 Lançamentos Financeiros
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 ml-8">
                 Utilize as colunas dinâmicas para registrar datas, valores e categorias como desejar.
               </p>
             </div>
