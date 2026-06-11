@@ -7,8 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
@@ -78,11 +76,12 @@ export type Database = {
         }
         Relationships: []
       }
-      rows_2026_05: {
+      rows: {
         Row: {
           created_at: string | null
           data: Json
           id: string
+          month: string
           row_id: string
           user_id: string
         }
@@ -90,6 +89,7 @@ export type Database = {
           created_at?: string | null
           data?: Json
           id?: string
+          month: string
           row_id: string
           user_id: string
         }
@@ -97,78 +97,7 @@ export type Database = {
           created_at?: string | null
           data?: Json
           id?: string
-          row_id?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      rows_2026_06: {
-        Row: {
-          created_at: string | null
-          data: Json
-          id: string
-          row_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          data?: Json
-          id?: string
-          row_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          data?: Json
-          id?: string
-          row_id?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      rows_2026_07: {
-        Row: {
-          created_at: string | null
-          data: Json
-          id: string
-          row_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          data?: Json
-          id?: string
-          row_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          data?: Json
-          id?: string
-          row_id?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      rows_2026_08: {
-        Row: {
-          created_at: string | null
-          data: Json
-          id: string
-          row_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          data?: Json
-          id?: string
-          row_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          data?: Json
-          id?: string
+          month?: string
           row_id?: string
           user_id?: string
         }
@@ -212,7 +141,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      /** @deprecated Use rows table directly */
       ensure_month_registry: { Args: { month_key: string }; Returns: undefined }
+      /** @deprecated Use rows table directly */
       ensure_month_table: { Args: { month_key: string }; Returns: undefined }
     }
     Enums: {

@@ -52,6 +52,7 @@ export default function SpreadsheetToolbar({
             id="btn-center-spreadsheet"
             onClick={onCenterSpreadsheet}
             title="Centralizar planilha"
+            aria-label="Centralizar planilha"
             style={{
               backgroundColor: mp(theme, 'surface2'),
               borderColor: mp(theme, 'border'),

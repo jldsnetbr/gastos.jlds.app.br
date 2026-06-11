@@ -11,38 +11,65 @@ interface UseUndoRedoReturn {
   reset: (state: HistoryState) => void;
 }
 
+/**
+ * Gerencia pilha de histórico (undo/redo) usando estado único e functional updates.
+ *
+ * Functional updates (setState(prev => ...)) eliminam a necessidade de dependências
+ * nos callbacks, evitando que `pushState` mude de referência a cada alteração.
+ *
+ * O padrão `let result` captura o valor síncrono durante a atualização do estado
+ * (o updater roda imediatamente em event handlers no React 18+).
+ */
 export function useUndoRedo(): UseUndoRedoReturn {
-  const [history, setHistory] = useState<HistoryState[]>([]);
-  const [currentIndex, setCurrentIndex] = useState<number>(-1);
+  const [state, setState] = useState<{
+    history: HistoryState[];
+    currentIndex: number;
+  }>({
+    history: [],
+    currentIndex: -1,
+  });
 
-  const pushState = useCallback((state: HistoryState) => {
-    setHistory((prev) => {
-      const clean = prev.slice(0, currentIndex + 1);
-      const next = [...clean, state];
+  const pushState = useCallback((s: HistoryState) => {
+    setState((prev) => {
+      const clean = prev.history.slice(0, prev.currentIndex + 1);
+      const next = [...clean, s];
       if (next.length > MAX_HISTORY_SIZE) next.shift();
-      return next;
+      return { history: next, currentIndex: next.length - 1 };
     });
-    setCurrentIndex((prev) => Math.min(prev + 1, MAX_HISTORY_SIZE - 1));
-  }, [currentIndex]);
-
-  const undo = useCallback((): HistoryState | null => {
-    if (currentIndex <= 0) return null;
-    const newIndex = currentIndex - 1;
-    setCurrentIndex(newIndex);
-    return history[newIndex] ?? null;
-  }, [history, currentIndex]);
-
-  const redo = useCallback((): HistoryState | null => {
-    if (currentIndex >= history.length - 1) return null;
-    const newIndex = currentIndex + 1;
-    setCurrentIndex(newIndex);
-    return history[newIndex] ?? null;
-  }, [history, currentIndex]);
-
-  const reset = useCallback((state: HistoryState) => {
-    setHistory([state]);
-    setCurrentIndex(0);
   }, []);
 
-  return { history, currentIndex, pushState, undo, redo, reset };
+  const undo = useCallback((): HistoryState | null => {
+    let result: HistoryState | null = null;
+    setState((prev) => {
+      if (prev.currentIndex <= 0) return prev;
+      const newIndex = prev.currentIndex - 1;
+      result = prev.history[newIndex] ?? null;
+      return { ...prev, currentIndex: newIndex };
+    });
+    return result;
+  }, []);
+
+  const redo = useCallback((): HistoryState | null => {
+    let result: HistoryState | null = null;
+    setState((prev) => {
+      if (prev.currentIndex >= prev.history.length - 1) return prev;
+      const newIndex = prev.currentIndex + 1;
+      result = prev.history[newIndex] ?? null;
+      return { ...prev, currentIndex: newIndex };
+    });
+    return result;
+  }, []);
+
+  const reset = useCallback((s: HistoryState) => {
+    setState({ history: [s], currentIndex: 0 });
+  }, []);
+
+  return {
+    history: state.history,
+    currentIndex: state.currentIndex,
+    pushState,
+    undo,
+    redo,
+    reset,
+  };
 }

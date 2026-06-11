@@ -1,6 +1,5 @@
 import { supabase } from './supabase';
 import type { Column, ColumnType, Row } from '../types';
-import { getMonthTableName } from './tableNames';
 
 const VALID_COLUMN_TYPES = new Set<string>(['text', 'number', 'select', 'date']);
 
@@ -19,6 +18,8 @@ function assertRowData(val: unknown): Row['data'] {
   }
   return {};
 }
+
+// ── Columns (unchanged) ──────────────────────────────────────
 
 export async function loadColumns(userId: string): Promise<Column[] | null> {
   const { data, error } = await supabase
@@ -74,51 +75,45 @@ export async function saveColumns(userId: string, columns: Column[]): Promise<vo
   }
 }
 
-export async function ensureMonthTable(month: string): Promise<void> {
-  await supabase.rpc('ensure_month_table', { month_key: month });
-}
-
-// ── Dynamic month tables (rows_YYYY_MM) ──
-// Created at runtime via ensure_month_table RPC.
-// The static Database type can't know every possible month name,
-// so we use `any` casts here.
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const qb = (tableName: string) => (supabase as any).from(tableName);
+// ── Rows (single `rows` table) ────────────────────────────────
 
 export async function loadMonthRows(userId: string, month: string): Promise<Row[] | null> {
-  const tableName = getMonthTableName(month);
-  const { data, error } = await qb(tableName)
-    .select('row_id, data')
-    .eq('user_id', userId);
+  const { data, error } = await supabase
+    .from('rows')
+    .select('row_id, month, data')
+    .eq('user_id', userId)
+    .eq('month', month);
 
   if (error) return null;
   if (!data || data.length === 0) return null;
-  return data.map((r: Record<string, unknown>) => ({
+
+  return data.map((r) => ({
     id: assertString(r.row_id, ''),
-    month,
+    month: assertString(r.month, month),
     data: assertRowData(r.data),
   }));
 }
 
 export async function saveMonthRows(userId: string, month: string, rows: Row[]): Promise<void> {
-  const tableName = getMonthTableName(month);
-
   try {
-    const { data: existing } = await qb(tableName)
+    const { data: existing } = await supabase
+      .from('rows')
       .select('row_id')
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .eq('month', month);
 
-    const existingRows: string[] = ((existing ?? []) as Record<string, unknown>[]).map(
+    const existingRows: string[] = ((existing ?? []) as { row_id: string }[]).map(
       (r) => assertString(r.row_id, ''),
     );
     const incomingIds = new Set(rows.map((r) => r.id));
 
     const toDelete = existingRows.filter((id) => !incomingIds.has(id));
     if (toDelete.length > 0) {
-      await qb(tableName)
+      await supabase
+        .from('rows')
         .delete()
         .eq('user_id', userId)
+        .eq('month', month)
         .in('row_id', toDelete);
     }
 
@@ -126,12 +121,20 @@ export async function saveMonthRows(userId: string, month: string, rows: Row[]):
       const toUpsert = rows.map((r) => ({
         user_id: userId,
         row_id: r.id,
+        month: r.month,
         data: r.data,
       }));
-      await qb(tableName)
+      await supabase
+        .from('rows')
         .upsert(toUpsert, { onConflict: 'user_id,row_id' });
     }
   } catch (err) {
     console.warn('saveMonthRows failed:', err);
   }
+}
+
+// ── Backward compat (no-op) ──────────────────────────────────
+/** @deprecated No longer needed — rows table is always available */
+export async function ensureMonthTable(_month: string): Promise<void> {
+  // Single rows table exists from migration 006 — nothing to ensure
 }

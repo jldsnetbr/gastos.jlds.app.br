@@ -17,6 +17,7 @@ import { parseCSV, toCSV, downloadCSV } from '../utils/csv';
 import { showToast as globalShowToast } from '../utils/toast';
 import type { Theme } from '../utils/storage';
 import { mp } from '../utils/theme';
+import { formatCurrency } from '../utils/format';
 
 interface SpreadsheetProps {
   columns: Column[];
@@ -807,7 +808,7 @@ export default function Spreadsheet({
                   }
                   return (
                     <td key={col.id} className="px-4 py-2.5 text-right font-mono text-sm font-bold text-slate-600 dark:text-slate-300 border-r border-slate-200/30 dark:border-slate-700/30">
-                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}
+                      {formatCurrency(total)}
                     </td>
                   );
                 })}

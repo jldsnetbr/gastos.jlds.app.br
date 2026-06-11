@@ -1,5 +1,4 @@
 import { supabase } from '../lib/supabase';
-import { getMonthTableName } from '../lib/tableNames';
 import type { Column, ColumnType, Row } from '../types';
 import type React from 'react';
 
@@ -16,42 +15,36 @@ export function subscribeToMonth(
   month: string,
   callbacks: RealtimeCallbacks
 ): () => void {
-  const tableName = getMonthTableName(month);
-
-  const channel = supabase.channel(`${tableName}:${userId}`);
+  const channel = supabase.channel(`rows:${userId}:${month}`);
 
   function makeRow(payload: Record<string, unknown>): Row {
     return {
-      id: typeof payload?.row_id === 'string' ? payload.row_id : typeof payload?.id === 'string' ? payload.id : '',
-      month,
-      data: (typeof payload?.data === 'object' && payload.data !== null ? payload.data : {}) as Row['data'],
+      id: typeof payload?.row_id === 'string' ? payload.row_id : '',
+      month: typeof payload?.month === 'string' ? payload.month : month,
+      data: (typeof payload?.data === 'object' && payload.data !== null
+        ? payload.data
+        : {}) as Row['data'],
     };
   }
 
-  channel.on(
-    'postgres_changes',
-    { event: 'INSERT', schema: 'public', table: tableName, filter: `user_id=eq.${userId}` },
-    (payload) => {
-      callbacks.onRowEvent('INSERT', makeRow(payload.new as Record<string, unknown>));
-    }
-  );
+  const rowsFilter = `user_id=eq.${userId}`;
+  const events: RealtimeEventType[] = ['INSERT', 'UPDATE', 'DELETE'];
 
-  channel.on(
-    'postgres_changes',
-    { event: 'UPDATE', schema: 'public', table: tableName, filter: `user_id=eq.${userId}` },
-    (payload) => {
-      callbacks.onRowEvent('UPDATE', makeRow(payload.new as Record<string, unknown>));
-    }
-  );
+  for (const event of events) {
+    channel.on(
+      'postgres_changes',
+      { event, schema: 'public', table: 'rows', filter: rowsFilter },
+      (payload) => {
+        const row = makeRow(payload.new as Record<string, unknown>);
+        // Only notify if the row belongs to the current month
+        if (row.month === month) {
+          callbacks.onRowEvent(event, row);
+        }
+      },
+    );
+  }
 
-  channel.on(
-    'postgres_changes',
-    { event: 'DELETE', schema: 'public', table: tableName, filter: `user_id=eq.${userId}` },
-    (payload) => {
-      callbacks.onRowEvent('DELETE', makeRow(payload.old as Record<string, unknown>));
-    }
-  );
-
+  // Columns subscription (unchanged, already on a static table)
   channel.on(
     'postgres_changes',
     { event: '*', schema: 'public', table: 'user_columns', filter: `user_id=eq.${userId}` },
@@ -75,7 +68,7 @@ export function subscribeToMonth(
         }));
         callbacks.onColumnsChange(columns);
       }
-    }
+    },
   );
 
   channel.subscribe();

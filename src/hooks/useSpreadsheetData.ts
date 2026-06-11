@@ -5,7 +5,6 @@ import {
   saveColumns as saveRemoteColumns,
   loadMonthRows as loadRemoteMonthRows,
   saveMonthRows as saveRemoteMonthRows,
-  ensureMonthTable,
 } from '../lib/dataAccess';
 import { debounce } from '../utils/debounce';
 import { subscribeToMonth, type RealtimeEventType } from './useRealtime';
@@ -42,6 +41,12 @@ export function useSpreadsheetData(
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const initializedUsersRef = useRef<Set<string>>(new Set());
   const skipNextColumnsRef = useRef(false);
+
+  // ── Refs para evitar stale closures ──
+  const columnsRef = useRef<Column[]>(columns);
+  const rowsRef = useRef<Row[]>(rows);
+  useEffect(() => { columnsRef.current = columns; }, [columns]);
+  useEffect(() => { rowsRef.current = rows; }, [rows]);
 
   const fetchAndSet = useCallback(async (uid: string, m: string) => {
     try {
@@ -82,10 +87,9 @@ export function useSpreadsheetData(
     [userId, month, debouncedSave]
   );
 
+  // ── Init ──
   useEffect(() => {
-    if (!userId) {
-      return;
-    }
+    if (!userId) return;
 
     const init = async () => {
       try {
@@ -106,7 +110,7 @@ export function useSpreadsheetData(
           initializedUsersRef.current.add(userId);
         }
 
-        await ensureMonthTable(month);
+        // rows table is always available — no ensureMonthTable needed
         await fetchAndSet(userId, month);
       } catch (err) {
         console.warn('init failed:', err);
@@ -120,6 +124,7 @@ export function useSpreadsheetData(
     init();
   }, [userId, month, fetchAndSet]);
 
+  // ── Realtime ──
   useEffect(() => {
     if (!dataLoaded || !userId) return;
 
@@ -145,24 +150,25 @@ export function useSpreadsheetData(
       skipNextColumnsRef,
     });
 
-    return () => {
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, [month, dataLoaded, userId]);
 
   const refresh = useCallback(async () => {
     if (userId) await fetchAndSet(userId, month);
   }, [userId, month, fetchAndSet]);
 
+  // ── Setters sem stale closure (lêem dos refs) ──
   const setColumnsAndSync = useCallback((cols: Column[]) => {
     setColumns(cols);
-    updateRemote(cols, rows);
-  }, [updateRemote, rows]);
+    columnsRef.current = cols;
+    updateRemote(cols, rowsRef.current);
+  }, [updateRemote]);
 
   const setRowsAndSync = useCallback((r: Row[]) => {
     setRows(r);
-    updateRemote(columns, r);
-  }, [updateRemote, columns]);
+    rowsRef.current = r;
+    updateRemote(columnsRef.current, r);
+  }, [updateRemote]);
 
   return {
     columns,

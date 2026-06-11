@@ -39,7 +39,7 @@ export default function App() {
     selectedMonth
   );
 
-  // Reset history when data changes month
+  // Reset history when month changes
   useEffect(() => {
     if (!dataLoaded) return;
     resetHistory({ columns, rows });
@@ -145,13 +145,13 @@ export default function App() {
               backgroundColor: mp(theme, 'surface2'),
               borderColor: mp(theme, 'border'),
             }} className="flex items-center gap-0.5 bg-slate-100/80 dark:bg-[#1E222A]/80 rounded-lg border border-slate-200/40 dark:border-slate-700/50 p-0.5 shadow-xs">
-              <button id="btn-prev-month" onClick={handlePrevMonth} title="Mês anterior" className="p-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-[#252A34] rounded transition active:scale-90">
+              <button id="btn-prev-month" onClick={handlePrevMonth} title="Mês anterior" aria-label="Mês anterior" className="p-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-[#252A34] rounded transition active:scale-90">
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <span style={{ color: mp(theme, 'text') }} className="px-3 text-2xs md:text-xs font-semibold text-slate-700 dark:text-slate-300 min-w-[110px] md:min-w-[120px] text-center select-none font-mono tracking-wide">
                 {formatMonthLabel(selectedMonth).toUpperCase()}
               </span>
-              <button id="btn-next-month" onClick={handleNextMonth} title="Próximo mês" className="p-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-[#252A34] rounded transition active:scale-90">
+              <button id="btn-next-month" onClick={handleNextMonth} title="Próximo mês" aria-label="Próximo mês" className="p-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-[#252A34] rounded transition active:scale-90">
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -161,10 +161,10 @@ export default function App() {
                 <span className="text-xs font-medium text-slate-500 dark:text-slate-400 hidden sm:inline">{syncLabel}</span>
               </div>
             )}
-            <button id="theme-toggler" onClick={cycleTheme} title={`Tema: ${themeLabel}`} className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-[#1E222A]/80 rounded-lg border border-slate-200/40 dark:border-slate-700/50 transition active:scale-90">
+            <button id="theme-toggler" onClick={cycleTheme} title={`Tema: ${themeLabel}`} aria-label={`Tema: ${themeLabel}`} className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-[#1E222A]/80 rounded-lg border border-slate-200/40 dark:border-slate-700/50 transition active:scale-90">
               {themeIcon}
             </button>
-            <button id="btn-signout" onClick={signOut} title="Sair" className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-[#1E222A]/80 rounded-lg border border-slate-200/40 dark:border-slate-700/50 transition active:scale-90">
+            <button id="btn-signout" onClick={signOut} title="Sair" aria-label="Sair" className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-[#1E222A]/80 rounded-lg border border-slate-200/40 dark:border-slate-700/50 transition active:scale-90">
               <LogOut className="w-[18px] h-[18px]" />
             </button>
           </div>

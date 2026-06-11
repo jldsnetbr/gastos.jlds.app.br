@@ -14,14 +14,4 @@ export default defineConfig({
     hmr: process.env.DISABLE_HMR !== 'true',
     watch: process.env.DISABLE_HMR === 'true' ? null : {},
   },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          supabase: ['@supabase/supabase-js'],
-          motion: ['motion'],
-        },
-      },
-    },
-  },
 });
