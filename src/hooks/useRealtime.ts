@@ -14,6 +14,9 @@ export function subscribeToMonth(
   month: string,
   callbacks: RealtimeCallbacks
 ): () => void {
+  const isLocalMode = import.meta.env.VITE_LOCAL_MODE === 'true';
+  if (isLocalMode) return () => {}; // No realtime in local mode
+
   const tableName = getMonthTableName(month);
 
   const channel = supabase.channel(`${tableName}:${userId}`);
