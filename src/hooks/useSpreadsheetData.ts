@@ -81,7 +81,26 @@ export function useSpreadsheetData(
     const init = async () => {
       try {
         const remoteColumns = await loadRemoteColumns(userId);
-        setColumns(remoteColumns ?? []);
+        const existing = remoteColumns ?? [];
+
+        const DEFAULT_COLUMNS: Column[] = [
+          { id: 'date', name: 'Data', type: 'date' },
+          { id: 'desc', name: 'Descrição', type: 'text' },
+          { id: 'type', name: 'Tipo', type: 'select', options: ['Entrada', 'Saída'] },
+          { id: 'amount', name: 'Valor', type: 'number' },
+          { id: 'status', name: 'Status', type: 'select', options: ['Pendente', 'Pago'] },
+        ];
+
+        const existingIds = new Set(existing.map((c) => c.id));
+        const missing = DEFAULT_COLUMNS.filter((c) => !existingIds.has(c.id));
+
+        if (missing.length > 0) {
+          const merged = [...existing, ...missing];
+          setColumns(merged);
+          await saveRemoteColumns(userId, merged);
+        } else {
+          setColumns(existing);
+        }
 
         await ensureMonthTable(month);
         await fetchAndSet(userId, month);

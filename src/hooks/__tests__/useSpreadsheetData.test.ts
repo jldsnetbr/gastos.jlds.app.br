@@ -46,14 +46,16 @@ describe('useSpreadsheetData', () => {
     expect(result.current.syncStatus).toBe('idle');
   });
 
-  it('loads columns and rows from remote', async () => {
+  it('loads columns and rows from remote, merging missing defaults', async () => {
     const { result } = renderHook(() => useSpreadsheetData('user1', '2026-06'));
 
     await waitFor(() => {
       expect(result.current.dataLoaded).toBe(true);
     });
 
-    expect(result.current.columns).toEqual([mockColumn]);
+    // mockColumn has id 'c1' which is not a default, so it gets merged with the 5 defaults
+    expect(result.current.columns.length).toBe(6);
+    expect(result.current.columns[0]).toEqual(mockColumn);
     expect(result.current.rows).toEqual([mockRow]);
   });
 
